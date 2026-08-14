@@ -1,0 +1,61 @@
+NUTRISALUD - CONTEXTO Y ESTADO DEL SISTEMA (ACTUALIZADO)
+========================================================================
+
+1. CONTEXTO GENERAL DEL SISTEMA
+NutriSalud es una plataforma web (SaaS) orientada a profesionales de la nutrición y sus pacientes. 
+Está desarrollada bajo una arquitectura MVC estricta y monolítica, utilizando tecnologías vanilla (sin frameworks pesados).
+
+Stack Tecnológico:
+- Backend: PHP 8 (Vanilla MVC)
+- Base de Datos: MySQL (conexión segura vía PDO)
+- Frontend: HTML5, CSS3, JavaScript Vanilla, Bootstrap 5, FontAwesome
+- Arquitectura: Controlador Frontal (index.php) enrutando mediante $_GET['action']
+
+Módulos Principales (SaaS):
+- Autenticación: Roles separados (Nutricionista / Paciente) con control de sesión basado en id.
+- Panel Nutricionista: Gestión de perfil propio (SaaS Multi-tenant), ABM de Pacientes, ABM de Turnos, y Planificador de Dietas.
+- Planificador Atómico 3FN: Diseño de dietas por días y momentos, guardadas en una tabla relacional profunda y leídas mediante la Vista_Menu_Paciente.
+- Portal del Paciente: Dashboard personal para visualizar dietas vigentes ("Mi Plan Completo" y "Mi Día"), agendar/cancelar turnos, y vincularse con WhatsApp.
+
+========================================================================
+
+2. FORTALEZAS DEL SISTEMA
+
+A) Arquitectura Segura y Sólida (PDO & MVC)
+- Todas las consultas a base de datos utilizan PDO con parámetros bindeados (bindParam), lo que bloquea de raíz ataques de Inyección SQL.
+- El patrón MVC garantiza que las vistas (HTML) estén totalmente separadas de la lógica de negocio y las consultas SQL, logrando un código mantenible.
+
+B) Escalabilidad del Planificador de Menú (Base Relacional Dinámica)
+- El plan alimentario ha dejado de ser un texto estático. Ahora utiliza intersección de tablas (Día, Momento, Alimento).
+- Modificación reciente exitosa: El Gestor permite agregar alimentos 100% personalizados y en cantidades de texto libre (Ej: "2 tostadas") gracias al rediseño del campo a VARCHAR en base de datos.
+- Sincronización transparente a través de la función SQL COALESCE() dentro de la vista `Vista_Menu_Paciente`.
+
+C) Single Source of Truth (Sincronización Perfil)
+- El sistema inyecta siempre la información en vivo desde la tabla Nutricionista. Si el profesional cambia su nombre o logo, todos los pacientes y planes generados heredan el cambio en tiempo real, evitando desincronización de datos históricos.
+
+D) Experiencia de Usuario (UI/UX)
+- Uso de componentes visuales modernos (glassmorphism en paneles, insignias dinámicas, alertas interactivas).
+- Menú lateral (Sidebar) segmentado e intuitivo, mejorando la usabilidad general para el Nutricionista y el Paciente.
+
+========================================================================
+
+3. DEBILIDADES Y ÁREAS DE MEJORA
+
+A) Seguridad de Sesiones a Mejorar
+- Actualmente si un Nutricionista o Paciente cambia su contraseña, las sesiones activas en otros navegadores no se invalidan de inmediato. Hace falta un sistema de caducidad o validación de tokens de sesión.
+- Las contraseñas en algunos flujos del paciente no están estrictamente obligadas a guardarse encriptadas con algoritmos robustos si se hiciera un alta masiva descuidada.
+
+B) Transacciones ACID Incompletas (Rollbacks)
+- Las operaciones múltiples (ej. actualizar el estado de turnos y planes al mismo tiempo, o guardar varios alimentos en cadena) no siempre están envueltas explícitamente en bloques `beginTransaction()`, `commit()`, y `rollBack()`. Si una consulta falla en medio de un proceso de 5 inserciones, pueden quedar datos incompletos en la base de datos.
+
+C) Integridad de Identidad (Multitenant Vulnerable)
+- Aunque existe la variable `IdNutri` en el controlador para aislar registros entre distintos Nutricionistas, la falta de una revisión exhaustiva en TODOS los métodos de los modelos (`DELETE` y `UPDATE`) podría permitir que un usuario malicioso mediante manipulación de URLs intente alterar o ver planes/turnos de pacientes ajenos. Hay que endurecer el filtrado en las cláusulas WHERE asegurando siempre `AND IdNutri = $_SESSION['IdNutri']`.
+
+D) Paginación y Optimización de Consultas
+- Los listados (Turnos y Pacientes) hacen un volcado total de la tabla (fetch). Si un profesional alcanza 1.000 pacientes, el sistema podría ralentizarse. Se requiere implementar un sistema de Paginación (OFFSET/LIMIT) y un buscador asíncrono (AJAX).
+
+========================================================================
+4. PRÓXIMOS PASOS RECOMENDADOS:
+1. Auditar y blindar cada Controlador con transacciones ACID.
+2. Implementar un Middleware de seguridad más robusto en `index.php`.
+3. Agregar AJAX/FetchAPI para evitar la recarga de página al guardar alimentos en el menú (para mayor fluidez).

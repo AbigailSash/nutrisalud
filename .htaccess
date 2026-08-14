@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Forzar HTTPS en producción (Descomentar o dejar activo)
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|::1)$
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Bloquear acceso a directorios y archivos sensibles
+    RewriteRule ^(logs|config|core)/ - [F,L]
+    RewriteRule \.(log|ini|env|json|lock|md)$ - [F,L]
+
+    # 3. Redirigir al Front Controller (index.php)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
+</IfModule>
+
+# Evitar listado de directorios
+Options -Indexes
