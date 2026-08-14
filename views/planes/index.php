@@ -1,3 +1,6 @@
+<?php
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,7 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary-green: #2ecc71; --dark-green: #27ae60; --light-green: #eafaf1; --sidebar-bg: #1a252f; }
+        :root { 
+            --primary-green: <?= htmlspecialchars($colorTema) ?>; 
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black); 
+            --light-green: color-mix(in srgb, var(--primary-green) 15%, white); 
+            --sidebar-bg: #1a252f; 
+        }
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; overflow-x: hidden; }
         .sidebar { height: 100vh; width: 280px; position: fixed; top: 0; left: 0; background-color: var(--sidebar-bg); padding-top: 2rem; z-index: 1000; }
         .sidebar-brand { color: white; font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 2.5rem; }

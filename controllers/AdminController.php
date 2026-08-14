@@ -1,4 +1,5 @@
 <?php
+// controllers/AdminController.php
 require_once 'models/Nutricionista.php';
 require_once 'config/Conexion.php';
 
@@ -29,12 +30,11 @@ class AdminController {
         require_once 'views/admin/nutricionistas.php';
     }
 
-    // API para DataTables/JS
     public function obtener_nutricionistas() {
         try {
             $sql = "SELECT n.IdNutri, n.DNI, n.Matricula, n.Nombre, n.Apellido, n.Email, n.Estado_Cuenta,
-                           (SELECT COUNT(*) FROM Paciente p WHERE p.IdNutri = n.IdNutri) AS TotalPacientes
-                    FROM Nutricionista n
+                           (SELECT COUNT(*) FROM paciente p WHERE p.IdNutri = n.IdNutri) AS TotalPacientes
+                    FROM nutricionista n
                     WHERE n.Rol = 'nutricionista'
                     ORDER BY n.Nombre ASC, n.Apellido ASC";
             
@@ -62,7 +62,7 @@ class AdminController {
                 $estado = trim($_POST['estado'] ?? '') ?: 'A';
 
                 // Validar email único
-                $sqlCheck = "SELECT IdNutri FROM Nutricionista WHERE Email = :email AND IdNutri != :id";
+                $sqlCheck = "SELECT IdNutri FROM nutricionista WHERE Email = :email AND IdNutri != :id";
                 $stmtCheck = $this->conexion->prepare($sqlCheck);
                 $stmtCheck->execute([':email' => $email, ':id' => $id ?: 0]);
                 if ($stmtCheck->rowCount() > 0) {
@@ -71,7 +71,7 @@ class AdminController {
 
                 // Validar DNI único
                 if (!empty($dni)) {
-                    $sqlCheckDni = "SELECT IdNutri FROM Nutricionista WHERE DNI = :dni AND IdNutri != :id";
+                    $sqlCheckDni = "SELECT IdNutri FROM nutricionista WHERE DNI = :dni AND IdNutri != :id";
                     $stmtCheckDni = $this->conexion->prepare($sqlCheckDni);
                     $stmtCheckDni->execute([':dni' => $dni, ':id' => $id ?: 0]);
                     if ($stmtCheckDni->rowCount() > 0) {
@@ -81,7 +81,7 @@ class AdminController {
 
                 // Validar Matrícula única
                 if (!empty($matricula)) {
-                    $sqlCheckMat = "SELECT IdNutri FROM Nutricionista WHERE Matricula = :mat AND IdNutri != :id";
+                    $sqlCheckMat = "SELECT IdNutri FROM nutricionista WHERE Matricula = :mat AND IdNutri != :id";
                     $stmtCheckMat = $this->conexion->prepare($sqlCheckMat);
                     $stmtCheckMat->execute([':mat' => $matricula, ':id' => $id ?: 0]);
                     if ($stmtCheckMat->rowCount() > 0) {
@@ -91,10 +91,10 @@ class AdminController {
 
                 if (empty($id)) {
                     // Create
-                    if (empty($password)) $password = '123456'; // Default password
+                    if (empty($password)) $password = '123456';
                     $hash = password_hash($password, PASSWORD_BCRYPT);
                     
-                    $sql = "INSERT INTO Nutricionista (DNI, Nombre, Apellido, Email, Password_Hash, Matricula, Rol, Estado_Cuenta) 
+                    $sql = "INSERT INTO nutricionista (DNI, Nombre, Apellido, Email, Password_Hash, Matricula, Rol, Estado_Cuenta) 
                             VALUES (:dni, :nom, :ape, :email, :hash, :mat, 'nutricionista', :estado)";
                     $stmt = $this->conexion->prepare($sql);
                     $stmt->execute([
@@ -110,7 +110,7 @@ class AdminController {
                     // Update
                     if (!empty($password)) {
                         $hash = password_hash($password, PASSWORD_BCRYPT);
-                        $sql = "UPDATE Nutricionista 
+                        $sql = "UPDATE nutricionista 
                                 SET DNI = :dni, Nombre = :nom, Apellido = :ape, Email = :email, 
                                     Password_Hash = :hash, Matricula = :mat, Estado_Cuenta = :estado 
                                 WHERE IdNutri = :id AND Rol = 'nutricionista'";
@@ -126,7 +126,7 @@ class AdminController {
                             ':id' => $id
                         ]);
                     } else {
-                        $sql = "UPDATE Nutricionista 
+                        $sql = "UPDATE nutricionista 
                                 SET DNI = :dni, Nombre = :nom, Apellido = :ape, Email = :email, 
                                     Matricula = :mat, Estado_Cuenta = :estado 
                                 WHERE IdNutri = :id AND Rol = 'nutricionista'";
@@ -157,7 +157,7 @@ class AdminController {
             try {
                 $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
                 
-                $sqlCheck = "SELECT Estado_Cuenta FROM Nutricionista WHERE IdNutri = :id AND Rol = 'nutricionista'";
+                $sqlCheck = "SELECT Estado_Cuenta FROM nutricionista WHERE IdNutri = :id AND Rol = 'nutricionista'";
                 $stmtCheck = $this->conexion->prepare($sqlCheck);
                 $stmtCheck->execute([':id' => $id]);
                 $nutri = $stmtCheck->fetch();
@@ -166,7 +166,7 @@ class AdminController {
 
                 $nuevoEstado = $nutri['Estado_Cuenta'] === 'A' ? 'I' : 'A';
 
-                $sqlUpdate = "UPDATE Nutricionista SET Estado_Cuenta = :estado WHERE IdNutri = :id";
+                $sqlUpdate = "UPDATE nutricionista SET Estado_Cuenta = :estado WHERE IdNutri = :id";
                 $stmtUpdate = $this->conexion->prepare($sqlUpdate);
                 $stmtUpdate->execute([':estado' => $nuevoEstado, ':id' => $id]);
 
@@ -179,3 +179,4 @@ class AdminController {
         }
     }
 }
+?>

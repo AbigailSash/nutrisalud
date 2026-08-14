@@ -1,3 +1,6 @@
+<?php
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,9 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --light-green: #eafaf1;
+            --primary-green: <?= htmlspecialchars($colorTema) ?>;
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+            --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
             --text-dark: #2c3e50;
             --text-gray: #7f8c8d;
             --bg-light: #f4f7f6;
@@ -97,6 +100,10 @@
         .user-avatar {
             width: 45px;
             height: 45px;
+            min-width: 45px;
+            min-height: 45px;
+            max-width: 45px;
+            max-height: 45px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             color: white;
@@ -106,6 +113,8 @@
             font-size: 1.2rem;
             font-weight: 600;
             box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+            object-fit: cover;
+            overflow: hidden;
         }
 
         /* Cards and Elements */

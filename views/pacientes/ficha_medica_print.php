@@ -10,6 +10,7 @@ if (isset($paciente['Fecha_Nacimiento'])) {
     $now = new DateTime();
     $edad = $now->diff($birth)->y;
 }
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -17,6 +18,11 @@ if (isset($paciente['Fecha_Nacimiento'])) {
     <meta charset="UTF-8">
     <title>Ficha Médica - <?= htmlspecialchars($paciente['Nombre'] . ' ' . $paciente['Apellido']) ?></title>
     <style>
+        :root {
+            --primary-green: <?= htmlspecialchars($colorTema) ?>;
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+            --light-green: color-mix(in srgb, var(--primary-green) 12%, white);
+        }
         body {
             font-family: Arial, sans-serif;
             color: #333;
@@ -34,7 +40,7 @@ if (isset($paciente['Fecha_Nacimiento'])) {
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #2ecc71;
+            border-bottom: 3px solid var(--primary-green);
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
@@ -51,13 +57,14 @@ if (isset($paciente['Fecha_Nacimiento'])) {
             font-size: 14px;
         }
         .section-title {
-            background: #e8f8f5;
-            color: #1abc9c;
+            background: var(--light-green);
+            color: var(--dark-green);
             padding: 8px 12px;
             font-size: 16px;
             font-weight: bold;
             margin: 25px 0 15px;
-            border-left: 4px solid #1abc9c;
+            border-left: 4px solid var(--primary-green);
+            border-radius: 4px;
         }
         .grid-2 {
             display: grid;
@@ -122,17 +129,18 @@ if (isset($paciente['Fecha_Nacimiento'])) {
             width: 200px;
             margin: 20px auto;
             padding: 10px 20px;
-            background-color: #2ecc71;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             color: white;
             text-align: center;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
             border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .btn-print:hover {
-            background-color: #27ae60;
+            opacity: 0.95;
         }
     </style>
 </head>
@@ -201,19 +209,31 @@ if (isset($paciente['Fecha_Nacimiento'])) {
         </div>
 
         <!-- 4. Antropometría -->
-        <div class="section-title">Antropometría Básica</div>
+        <div class="section-title">Antropometría y Composición Corporal</div>
         <div class="grid-3">
             <div class="field">
-                <span class="label">Peso Actual (kg)</span>
-                <span class="value"><?= getValPrint($datosHistoria, 'antrop_peso_actual') ?></span>
+                <span class="label">Peso Actual</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'peso_actual', getValPrint($datosHistoria, 'antrop_peso_actual')) ?> kg</span>
             </div>
             <div class="field">
-                <span class="label">Talla (mts)</span>
-                <span class="value"><?= getValPrint($datosHistoria, 'antrop_talla') ?></span>
+                <span class="label">Talla</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'talla', getValPrint($datosHistoria, 'antrop_talla')) ?> m</span>
             </div>
             <div class="field">
-                <span class="label">Peso Usual (kg)</span>
-                <span class="value"><?= getValPrint($datosHistoria, 'antrop_peso_usual') ?></span>
+                <span class="label">IMC / Diagnóstico</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'imc') ?> (<?= getValPrint($datosHistoria, 'imc_diagnostico', 'N/A') ?>)</span>
+            </div>
+            <div class="field">
+                <span class="label">Circ. Cintura</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'circ_cintura') ?> cm</span>
+            </div>
+            <div class="field">
+                <span class="label">Circ. Cadera</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'circ_cadera') ?> cm</span>
+            </div>
+            <div class="field">
+                <span class="label">Relación Cintura/Cadera (ICC)</span>
+                <span class="value"><?= getValPrint($datosHistoria, 'relacion_cc') ?> (<?= getValPrint($datosHistoria, 'relacion_cc_diagnostico', 'N/A') ?>)</span>
             </div>
         </div>
 

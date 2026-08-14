@@ -48,4 +48,14 @@
             });
         });
     });
+
+    // Sincronización de variables de tema de color
+    (function() {
+        const themeColor = '<?= $_SESSION['ColorTema'] ?? '#2ecc71' ?>';
+        if (themeColor) {
+            document.documentElement.style.setProperty('--primary-green', themeColor);
+            document.documentElement.style.setProperty('--dark-green', `color-mix(in srgb, ${themeColor} 75%, black)`);
+            document.documentElement.style.setProperty('--light-green', `color-mix(in srgb, ${themeColor} 15%, white)`);
+        }
+    })();
 </script>

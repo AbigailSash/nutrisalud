@@ -1,18 +1,21 @@
+<?php
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriSalud - Mis Turnos</title>
+    <title>NutriSalud - Gestión de Turnos</title>
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --light-green: #eafaf1;
+            --primary-green: <?= htmlspecialchars($colorTema) ?>;
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+            --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
             --text-dark: #2c3e50;
             --text-gray: #7f8c8d;
             --bg-light: #f4f7f6;
@@ -26,86 +29,11 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling (Same as Dashboard) */
-        .sidebar {
-            height: 100vh;
-            width: 280px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: var(--sidebar-bg);
-            padding-top: 2rem;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .sidebar-brand {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .sidebar-brand i { color: var(--primary-green); margin-right: 10px; }
-
-        .nav-sidebar .nav-link {
-            color: #b8c7ce;
-            padding: 12px 25px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 5px;
-            border-left: 4px solid transparent;
-        }
-
-        .nav-sidebar .nav-link:hover, .nav-sidebar .nav-link.active {
-            color: white;
-            background-color: rgba(255,255,255,0.05);
-            border-left-color: var(--primary-green);
-        }
-
-        .nav-sidebar .nav-link i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
         /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 2rem 3rem;
             min-height: 100vh;
-        }
-
-        /* Top Header */
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
         }
 
         .page-title {
@@ -165,15 +93,28 @@
             letter-spacing: 0.5px;
         }
         .table-custom tbody td {
-            padding: 20px 15px;
+            padding: 18px 15px;
             vertical-align: middle;
             border-bottom: 1px solid #f1f2f6;
             color: var(--text-dark);
             font-weight: 500;
         }
 
+        .user-avatar-small {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-right: 12px;
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
         @media (max-width: 991px) {
-            .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
@@ -185,41 +126,31 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="top-header">
+        <!-- Top Header Modular -->
+        <?php include 'views/layout/header.php'; ?>
+
+        <!-- Alertas Flash -->
+        <?php include 'views/layout/alertas.php'; ?>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
                 <h1 class="page-title">Gestión de Turnos</h1>
-                <p class="text-muted">Administra tu agenda y citas con pacientes.</p>
+                <p class="text-muted mb-0">Administra tu agenda de consultas y citas con pacientes.</p>
             </div>
-            <div class="user-profile">
-                <div class="text-end d-none d-md-block">
-                    <div class="fw-bold text-dark">Dra. Nutrición</div>
-                    <small class="text-muted">Nutricionista Profesional</small>
-                </div>
-                <div class="user-avatar">DN</div>
-            </div>
+            <a href="index.php?action=agendar_turno" class="btn btn-gradient text-decoration-none">
+                <i class="fa-solid fa-plus me-2"></i> Nuevo Turno
+            </a>
         </div>
 
-        <?php if (isset($_SESSION['mensaje'])): ?>
-            <div class="alert alert-<?= htmlspecialchars($_SESSION['tipo_mensaje'] ?? 'success') ?> alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($_SESSION['mensaje']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php 
-                // Limpiar mensaje de la sesión luego de mostrarlo
-                unset($_SESSION['mensaje']); 
-                unset($_SESSION['tipo_mensaje']); 
-            ?>
-        <?php endif; ?>
-
         <!-- Agenda Section -->
-        <div class="dashboard-card mt-2">
+        <div class="dashboard-card">
             <div class="card-header-custom">
-                <h4 class="mb-0 fw-bold"><i class="fa-solid fa-calendar-alt me-2 text-primary-custom" style="color:var(--primary-green)"></i> Todos los Turnos</h4>
-                <a href="index.php?action=agendar_turno" class="btn btn-gradient text-decoration-none"><i class="fa-solid fa-plus me-2"></i> Nuevo Turno</a>
+                <h5 class="mb-0 fw-bold"><i class="fa-solid fa-calendar-days me-2" style="color:var(--primary-green)"></i> Agenda General de Citas</h5>
+                <span class="text-muted small">Total: <strong><?= count($turnos ?? []) ?></strong> turnos</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-custom table-hover">
+                    <table class="table table-custom table-hover mb-0">
                         <thead>
                             <tr>
                                 <th class="ps-4">Fecha y Hora</th>
@@ -232,26 +163,36 @@
                             <?php if (!empty($turnos)): ?>
                                 <?php foreach($turnos as $t): ?>
                                 <tr>
-                                    <td class="ps-4 fw-bold text-muted">
-                                        <?= date('d/m/Y', strtotime($t['Fecha'])) ?> <br>
-                                        <small><?= htmlspecialchars($t['Hora']) ?></small>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark"><?= date('d/m/Y', strtotime($t['Fecha'])) ?></div>
+                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i><?= htmlspecialchars($t['Hora']) ?></small>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; margin-right: 10px; background: #e3f2fd; color: #2196f3; box-shadow: none;">
-                                                <?= strtoupper(substr($t['PacienteNombre'],0,1) . substr($t['PacienteApellido'],0,1)) ?>
+                                            <div class="user-avatar-small">
+                                                <?= strtoupper(substr($t['PacienteNombre'] ?? 'X',0,1) . substr($t['PacienteApellido'] ?? 'X',0,1)) ?>
                                             </div>
-                                            <?= htmlspecialchars($t['PacienteNombre'] . ' ' . $t['PacienteApellido']) ?>
+                                            <span class="fw-semibold"><?= htmlspecialchars(($t['PacienteNombre'] ?? '') . ' ' . ($t['PacienteApellido'] ?? '')) ?></span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge rounded-pill bg-<?= $t['Estado_Turno'] == 'Confirmado' ? 'success' : ($t['Estado_Turno'] == 'Cancelado' ? 'danger' : 'warning') ?> text-dark px-3 py-2 fw-semibold">
+                                        <?php
+                                        $badgeClass = 'bg-warning text-dark';
+                                        if ($t['Estado_Turno'] === 'Confirmado') $badgeClass = 'bg-success text-white';
+                                        elseif ($t['Estado_Turno'] === 'Cancelado') $badgeClass = 'bg-danger text-white';
+                                        elseif ($t['Estado_Turno'] === 'Atendido') $badgeClass = 'bg-info text-dark';
+                                        ?>
+                                        <span class="badge rounded-pill <?= $badgeClass ?> px-3 py-2 fw-semibold">
                                             <?= htmlspecialchars($t['Estado_Turno']) ?>
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <a href="index.php?action=editar_turno&id=<?= $t['IdTurno'] ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"><i class="fa-solid fa-pen"></i></a>
-                                        <button onclick="confirmarEliminacion(<?= $t['IdTurno'] ?>)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"><i class="fa-solid fa-trash"></i></button>
+                                        <a href="index.php?action=editar_turno&id=<?= $t['IdTurno'] ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold me-1" title="Editar Turno">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <button onclick="confirmarEliminacion(<?= $t['IdTurno'] ?>)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" title="Eliminar Turno">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -260,10 +201,10 @@
                                     <td colspan="4" class="text-center py-5">
                                         <div class="py-4">
                                             <div class="mb-3">
-                                                <i class="fa-solid fa-calendar-xmark" style="font-size: 3rem; color: #ecf0f1;"></i>
+                                                <i class="fa-solid fa-calendar-xmark" style="font-size: 3rem; color: #cbd5e1;"></i>
                                             </div>
-                                            <h5 class="text-muted fw-bold">No hay turnos</h5>
-                                            <p class="text-muted mb-0">Comienza agendando un nuevo turno.</p>
+                                            <h5 class="text-muted fw-bold">No hay turnos registrados</h5>
+                                            <p class="text-muted mb-0">Comienza agendando un nuevo turno para tus pacientes.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -281,7 +222,7 @@
         function confirmarEliminacion(idTurno) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: "¡El turno será eliminado y no podrás revertir esta acción!",
+                text: "El turno será eliminado permanentemente.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#27ae60',

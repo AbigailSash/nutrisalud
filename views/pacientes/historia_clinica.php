@@ -38,14 +38,14 @@ function renderCustomFields($seccion, $camposCustom) {
         .wrapper { display: flex; width: 100%; align-items: stretch; }
         .main-content { min-height: 100vh; padding: 30px; margin-left: 280px; width: calc(100% - 280px); overflow-y: auto; transition: margin-left 0.3s ease, width 0.3s ease; }
         .form-section { background: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
-        .section-title { color: #27ae60; font-weight: 600; border-bottom: 2px solid #eafaf1; padding-bottom: 10px; margin-bottom: 20px; }
+        .section-title { color: var(--dark-green); font-weight: 600; border-bottom: 2px solid var(--light-green); padding-bottom: 10px; margin-bottom: 20px; }
         .form-label { font-weight: 500; font-size: 0.9rem; color: #34495e; }
         .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px; font-size: 0.9rem; }
-        .form-control:focus, .form-select:focus { border-color: #2ecc71; box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25); }
-        .btn-success { background-color: #2ecc71; border: none; font-weight: 600; padding: 10px 25px; border-radius: 50px; }
-        .btn-success:hover { background-color: #27ae60; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary-green) !important; box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--primary-green) 25%, transparent) !important; }
+        .btn-success { background: linear-gradient(135deg, var(--primary-green), var(--dark-green)) !important; border: none !important; font-weight: 600; padding: 10px 25px; border-radius: 50px; }
+        .btn-success:hover { opacity: 0.95; transform: translateY(-1px); }
         .nav-pills .nav-link { color: #34495e; border-radius: 50px; margin: 0 5px; font-weight: 500; }
-        .nav-pills .nav-link.active { background-color: #2ecc71; color: white; }
+        .nav-pills .nav-link.active { background: linear-gradient(135deg, var(--primary-green), var(--dark-green)) !important; color: white !important; }
     </style>
 </head>
 <body>
@@ -189,10 +189,16 @@ function renderCustomFields($seccion, $camposCustom) {
                                 <div class="col-md-3"><label class="form-label">Peso Usual (kg)</label><input type="number" step="0.1" class="form-control" name="peso_usual" id="antropo_peso_usual" value="<?= getVal($datosHistoria, 'peso_usual') ?>"></div>
                                 
                                 <!-- Circunferencias adicionales -->
-                                <div class="col-md-3"><label class="form-label">Circ. Cintura (cm)</label><input type="number" step="0.1" class="form-control" name="circ_cintura" value="<?= getVal($datosHistoria, 'circ_cintura') ?>"></div>
-                                <div class="col-md-3"><label class="form-label">Circ. Cadera (cm)</label><input type="number" step="0.1" class="form-control" name="circ_cadera" value="<?= getVal($datosHistoria, 'circ_cadera') ?>"></div>
-                                <div class="col-md-3"><label class="form-label">Relación Cintura/Cadera</label><input type="number" step="0.01" class="form-control" name="relacion_cc" value="<?= getVal($datosHistoria, 'relacion_cc') ?>"></div>
-                                <div class="col-md-3"><label class="form-label">Circ. Media Brazo (cm)</label><input type="number" step="0.1" class="form-control" name="circ_brazo" value="<?= getVal($datosHistoria, 'circ_brazo') ?>"></div>
+                                <div class="col-md-3"><label class="form-label">Circ. Cintura (cm)</label><input type="number" step="0.1" class="form-control" name="circ_cintura" id="antropo_cintura" value="<?= getVal($datosHistoria, 'circ_cintura') ?>"></div>
+                                <div class="col-md-3"><label class="form-label">Circ. Cadera (cm)</label><input type="number" step="0.1" class="form-control" name="circ_cadera" id="antropo_cadera" value="<?= getVal($datosHistoria, 'circ_cadera') ?>"></div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Relación Cintura/Cadera</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" class="form-control" name="relacion_cc" id="antropo_rcc" value="<?= getVal($datosHistoria, 'relacion_cc') ?>" placeholder="Calculado o manual">
+                                        <span class="badge d-flex align-items-center bg-secondary" id="badge_rcc" style="border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 0.75rem;">--</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3"><label class="form-label">Circ. Media Brazo (cm)</label><input type="number" step="0.1" class="form-control" name="circ_brazo" id="antropo_brazo" value="<?= getVal($datosHistoria, 'circ_brazo') ?>"></div>
                             </div>
                             
                             <!-- Panel de Resultados Reactivos -->

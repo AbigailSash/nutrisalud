@@ -1,3 +1,6 @@
+<?php
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,9 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-green: <?= htmlspecialchars($colorTema) ?>;
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+            --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
+        }
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
         .form-card { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); padding: 3rem; }
-        .btn-gradient { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; border: none; font-weight: 600; border-radius: 50px; }
+        .btn-gradient { background: linear-gradient(135deg, var(--primary-green), var(--dark-green)); color: white; border: none; font-weight: 600; border-radius: 50px; }
+        .btn-gradient:hover { color: white; opacity: 0.95; }
     </style>
 </head>
 <body>

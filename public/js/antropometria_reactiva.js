@@ -3,9 +3,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputPeso = document.getElementById('antropo_peso');
     const inputMuneca = document.getElementById('antropo_muneca');
     const inputPesoUsual = document.getElementById('antropo_peso_usual');
-    const sexoPaciente = document.getElementById('app-container').getAttribute('data-sexo') || 'M';
+    
+    // Circunferencias Cintura / Cadera
+    const inputCintura = document.getElementById('antropo_cintura');
+    const inputCadera = document.getElementById('antropo_cadera');
+    const inputRcc = document.getElementById('antropo_rcc');
+    const badgeRcc = document.getElementById('badge_rcc');
 
-    // Elements to update
+    const appContainer = document.getElementById('app-container');
+    const sexoPaciente = (appContainer ? appContainer.getAttribute('data-sexo') : 'M') || 'M';
+
+    // Elements to update in stats panel
     const resImc = document.getElementById('res_imc');
     const badgeImc = document.getElementById('badge_imc');
     
@@ -18,13 +26,56 @@ document.addEventListener('DOMContentLoaded', function() {
     const resContextura = document.getElementById('res_contextura');
     const resPctPu = document.getElementById('res_pct_pu');
 
-    function calcularAntropometria() {
-        let talla = parseFloat(inputTalla.value);
-        let peso = parseFloat(inputPeso.value);
-        let muneca = parseFloat(inputMuneca.value);
-        let pesoUsual = parseFloat(inputPesoUsual.value);
+    // Función para actualizar el badge de diagnóstico de RCC / ICC
+    function actualizarDiagnosticoRcc(rcc) {
+        if (!badgeRcc) return;
+        if (!isNaN(rcc) && rcc > 0) {
+            let diagRcc = '';
+            let claseRcc = 'bg-secondary text-white';
+            if (sexoPaciente === 'M') {
+                if (rcc < 0.90) { diagRcc = 'Bajo Riesgo'; claseRcc = 'bg-success text-white'; }
+                else if (rcc <= 0.94) { diagRcc = 'Riesgo Moderado'; claseRcc = 'bg-warning text-dark'; }
+                else { diagRcc = 'Alto Riesgo'; claseRcc = 'bg-danger text-white'; }
+            } else {
+                if (rcc < 0.80) { diagRcc = 'Bajo Riesgo'; claseRcc = 'bg-success text-white'; }
+                else if (rcc <= 0.84) { diagRcc = 'Riesgo Moderado'; claseRcc = 'bg-warning text-dark'; }
+                else { diagRcc = 'Alto Riesgo'; claseRcc = 'bg-danger text-white'; }
+            }
+            badgeRcc.textContent = diagRcc;
+            badgeRcc.className = 'badge d-flex align-items-center ' + claseRcc;
+        } else {
+            badgeRcc.textContent = '--';
+            badgeRcc.className = 'badge d-flex align-items-center bg-secondary text-white';
+        }
+    }
 
-        if (isNaN(talla) || talla <= 0) return; // Need at least height to do some calculations
+    // Cálculo automático de RCC a partir de Cintura y Cadera
+    function calcularRccDesdeCircunferencias() {
+        let cintura = inputCintura ? parseFloat(inputCintura.value) : 0;
+        let cadera = inputCadera ? parseFloat(inputCadera.value) : 0;
+
+        if (!isNaN(cintura) && cintura > 0 && !isNaN(cadera) && cadera > 0) {
+            let rcc = cintura / cadera;
+            if (inputRcc) inputRcc.value = rcc.toFixed(2);
+            actualizarDiagnosticoRcc(rcc);
+        } else {
+            // Si el campo tiene un valor manual previo, lo evaluamos
+            let manualRcc = inputRcc ? parseFloat(inputRcc.value) : 0;
+            actualizarDiagnosticoRcc(manualRcc);
+        }
+    }
+
+    function calcularAntropometria() {
+        let talla = inputTalla ? parseFloat(inputTalla.value) : 0;
+        let peso = inputPeso ? parseFloat(inputPeso.value) : 0;
+        let muneca = inputMuneca ? parseFloat(inputMuneca.value) : 0;
+        let pesoUsual = inputPesoUsual ? parseFloat(inputPesoUsual.value) : 0;
+
+        // 1. Relación Cintura / Cadera
+        calcularRccDesdeCircunferencias();
+
+        // 2. IMC y Métricas de Talla/Peso
+        if (isNaN(talla) || talla <= 0) return;
         
         let imc = 0;
         let pesoIdeal = 0;
@@ -32,10 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let pesoCorregido = 0;
         let tallaCm = talla * 100;
 
-        // 1. IMC
+        // IMC
         if (!isNaN(peso) && peso > 0) {
             imc = peso / (talla * talla);
-            resImc.textContent = imc.toFixed(2);
+            if (resImc) resImc.textContent = imc.toFixed(2);
             
             let diagImc = '';
             let claseImc = 'bg-secondary';
@@ -46,26 +97,30 @@ document.addEventListener('DOMContentLoaded', function() {
             else if (imc <= 39.99) { diagImc = 'Obesidad Grado II'; claseImc = 'bg-danger'; }
             else { diagImc = 'Obesidad Grado III'; claseImc = 'bg-danger'; }
             
-            badgeImc.textContent = diagImc;
-            badgeImc.className = 'badge mt-1 ' + claseImc;
+            if (badgeImc) {
+                badgeImc.textContent = diagImc;
+                badgeImc.className = 'badge mt-1 ' + claseImc;
+            }
         } else {
-            resImc.textContent = '--';
-            badgeImc.textContent = 'N/A';
-            badgeImc.className = 'badge bg-secondary mt-1';
+            if (resImc) resImc.textContent = '--';
+            if (badgeImc) {
+                badgeImc.textContent = 'N/A';
+                badgeImc.className = 'badge bg-secondary mt-1';
+            }
         }
 
-        // 2. Peso Ideal & % Peso Ideal & Corregido
+        // Peso Ideal & % Peso Ideal & Corregido
         if (tallaCm > 150) {
             if (sexoPaciente === 'M') {
                 pesoIdeal = ((tallaCm - 150) * 2.72 / 2.5) + 47.7;
             } else {
                 pesoIdeal = ((tallaCm - 150) * 2.27 / 2.5) + 45.5;
             }
-            resPi.textContent = pesoIdeal.toFixed(2) + ' kg';
+            if (resPi) resPi.textContent = pesoIdeal.toFixed(2) + ' kg';
 
             if (!isNaN(peso) && peso > 0) {
                 pctPi = (peso / pesoIdeal) * 100;
-                resPctPi.textContent = pctPi.toFixed(2) + ' %';
+                if (resPctPi) resPctPi.textContent = pctPi.toFixed(2) + ' %';
                 
                 let diagPct = '';
                 let clasePct = 'bg-secondary';
@@ -74,30 +129,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if (pctPi <= 120) { diagPct = 'Sobrepeso'; clasePct = 'bg-warning text-dark'; }
                 else { diagPct = 'Obesidad'; clasePct = 'bg-danger'; }
                 
-                badgePctPi.textContent = diagPct;
-                badgePctPi.className = 'badge mt-1 ' + clasePct;
+                if (badgePctPi) {
+                    badgePctPi.textContent = diagPct;
+                    badgePctPi.className = 'badge mt-1 ' + clasePct;
+                }
 
                 if (imc > 24.99 || pctPi > 110) {
                     pesoCorregido = ((peso - pesoIdeal) * 0.25) + pesoIdeal;
-                    resPic.textContent = pesoCorregido.toFixed(2) + ' kg';
+                    if (resPic) resPic.textContent = pesoCorregido.toFixed(2) + ' kg';
                 } else {
-                    resPic.textContent = '--';
+                    if (resPic) resPic.textContent = '--';
                 }
             } else {
-                resPctPi.textContent = '-- %';
-                badgePctPi.textContent = 'N/A';
-                badgePctPi.className = 'badge bg-secondary mt-1';
-                resPic.textContent = '--';
+                if (resPctPi) resPctPi.textContent = '-- %';
+                if (badgePctPi) {
+                    badgePctPi.textContent = 'N/A';
+                    badgePctPi.className = 'badge bg-secondary mt-1';
+                }
+                if (resPic) resPic.textContent = '--';
             }
         } else {
-            resPi.textContent = '-- kg';
-            resPic.textContent = '--';
-            resPctPi.textContent = '-- %';
-            badgePctPi.textContent = 'N/A';
-            badgePctPi.className = 'badge bg-secondary mt-1';
+            if (resPi) resPi.textContent = '-- kg';
+            if (resPic) resPic.textContent = '--';
+            if (resPctPi) resPctPi.textContent = '-- %';
+            if (badgePctPi) {
+                badgePctPi.textContent = 'N/A';
+                badgePctPi.className = 'badge bg-secondary mt-1';
+            }
         }
 
-        // 3. Contextura
+        // Contextura
         if (!isNaN(muneca) && muneca > 0) {
             let r = tallaCm / muneca;
             let ctx = '';
@@ -110,27 +171,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if (r >= 10.1) ctx = 'Mediana';
                 else ctx = 'Grande';
             }
-            resContextura.textContent = ctx;
+            if (resContextura) resContextura.textContent = ctx;
         } else {
-            resContextura.textContent = '--';
+            if (resContextura) resContextura.textContent = '--';
         }
 
-        // 4. % Peso Usual
+        // % Peso Usual
         if (!isNaN(peso) && peso > 0 && !isNaN(pesoUsual) && pesoUsual > 0) {
             let pctPu = (peso / pesoUsual) * 100;
-            resPctPu.textContent = pctPu.toFixed(2);
+            if (resPctPu) resPctPu.textContent = pctPu.toFixed(2);
         } else {
-            resPctPu.textContent = '--';
+            if (resPctPu) resPctPu.textContent = '--';
         }
     }
 
-    if (inputTalla && inputPeso && inputMuneca && inputPesoUsual) {
-        inputTalla.addEventListener('input', calcularAntropometria);
-        inputPeso.addEventListener('input', calcularAntropometria);
-        inputMuneca.addEventListener('input', calcularAntropometria);
-        inputPesoUsual.addEventListener('input', calcularAntropometria);
-        
-        // Ejecutar cálculo inicial si hay datos
-        calcularAntropometria();
+    // Event listeners para cálculo automático base
+    const inputs = [inputTalla, inputPeso, inputMuneca, inputPesoUsual, inputCintura, inputCadera];
+    inputs.forEach(input => {
+        if (input) {
+            input.addEventListener('input', calcularAntropometria);
+            input.addEventListener('change', calcularAntropometria);
+        }
+    });
+
+    // Event listener para cuando el profesional edita MANUALMENTE la Relación Cintura/Cadera
+    if (inputRcc) {
+        inputRcc.addEventListener('input', function() {
+            let valManual = parseFloat(this.value);
+            actualizarDiagnosticoRcc(valManual);
+        });
+        inputRcc.addEventListener('change', function() {
+            let valManual = parseFloat(this.value);
+            actualizarDiagnosticoRcc(valManual);
+        });
+    }
+    
+    // Cálculo inicial reactivo al cargar
+    calcularAntropometria();
+    if (inputRcc && inputRcc.value) {
+        actualizarDiagnosticoRcc(parseFloat(inputRcc.value));
     }
 });

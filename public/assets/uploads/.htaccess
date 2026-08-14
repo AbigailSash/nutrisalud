@@ -1,0 +1,7 @@
+# Prohibir ejecución de scripts en carpeta de subida de assets
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|cgi|pl|py|sh|bash|exe|bat)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+Options -Indexes -ExecCGI

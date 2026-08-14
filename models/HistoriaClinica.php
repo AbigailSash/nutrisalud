@@ -1,4 +1,5 @@
 <?php
+// models/HistoriaClinica.php
 require_once 'config/Conexion.php';
 
 class HistoriaClinica {
@@ -9,7 +10,7 @@ class HistoriaClinica {
     }
 
     public function obtenerPorPaciente($idPaciente, $idNutri) {
-        $sql = "SELECT * FROM Historia_Clinica WHERE IdPaciente = :id_paciente AND IdNutri = :id_nutri";
+        $sql = "SELECT * FROM historia_clinica WHERE IdPaciente = :id_paciente AND IdNutri = :id_nutri";
         $stmt = $this->conexion->prepare($sql);
         $stmt->bindParam(':id_paciente', $idPaciente, PDO::PARAM_INT);
         $stmt->bindParam(':id_nutri', $idNutri, PDO::PARAM_INT);
@@ -18,31 +19,30 @@ class HistoriaClinica {
     }
 
     public function guardar($idPaciente, $idNutri, $datosJSON) {
-        // Verificar si ya existe
         $existente = $this->obtenerPorPaciente($idPaciente, $idNutri);
         $fechaActual = date('Y-m-d H:i:s');
 
         if ($existente) {
-            $sql = "UPDATE Historia_Clinica 
+            $sql = "UPDATE historia_clinica 
                     SET Datos_JSON = :datos, FechaUltimaModificacion = :fecha 
                     WHERE IdPaciente = :id_paciente AND IdNutri = :id_nutri";
             $stmt = $this->conexion->prepare($sql);
         } else {
-            $sql = "INSERT INTO Historia_Clinica (IdPaciente, IdNutri, FechaUltimaModificacion, Datos_JSON) 
+            $sql = "INSERT INTO historia_clinica (IdPaciente, IdNutri, FechaUltimaModificacion, Datos_JSON) 
                     VALUES (:id_paciente, :id_nutri, :fecha, :datos)";
             $stmt = $this->conexion->prepare($sql);
         }
 
         $stmt->bindParam(':id_paciente', $idPaciente, PDO::PARAM_INT);
         $stmt->bindParam(':id_nutri', $idNutri, PDO::PARAM_INT);
-        $stmt->bindParam(':fecha', $fechaActual);
-        $stmt->bindParam(':datos', $datosJSON);
+        $stmt->bindParam(':fecha', $fechaActual, PDO::PARAM_STR);
+        $stmt->bindParam(':datos', $datosJSON, PDO::PARAM_STR);
         
         return $stmt->execute();
     }
 
     public function guardarCamposCustom($idPaciente, $campos) {
-        // Primero, eliminar todos los campos custom existentes para este paciente
+        // Eliminar campos custom anteriores para este paciente
         $sqlDelete = "DELETE FROM historia_clinica_campos_custom WHERE paciente_id = :id_paciente";
         $stmtDelete = $this->conexion->prepare($sqlDelete);
         $stmtDelete->bindParam(':id_paciente', $idPaciente, PDO::PARAM_INT);
@@ -55,13 +55,15 @@ class HistoriaClinica {
             $stmtInsert = $this->conexion->prepare($sqlInsert);
 
             foreach ($campos as $seccion => $listaCampos) {
-                foreach ($listaCampos as $campo) {
-                    if (!empty($campo['titulo']) || !empty($campo['contenido'])) {
-                        $stmtInsert->bindValue(':id_paciente', $idPaciente, PDO::PARAM_INT);
-                        $stmtInsert->bindValue(':seccion', $seccion);
-                        $stmtInsert->bindValue(':titulo', $campo['titulo'] ?? '');
-                        $stmtInsert->bindValue(':contenido', $campo['contenido'] ?? '');
-                        $stmtInsert->execute();
+                if (is_array($listaCampos)) {
+                    foreach ($listaCampos as $campo) {
+                        if (!empty($campo['titulo']) || !empty($campo['contenido'])) {
+                            $stmtInsert->bindValue(':id_paciente', $idPaciente, PDO::PARAM_INT);
+                            $stmtInsert->bindValue(':seccion', $seccion, PDO::PARAM_STR);
+                            $stmtInsert->bindValue(':titulo', $campo['titulo'] ?? '', PDO::PARAM_STR);
+                            $stmtInsert->bindValue(':contenido', $campo['contenido'] ?? '', PDO::PARAM_STR);
+                            $stmtInsert->execute();
+                        }
                     }
                 }
             }

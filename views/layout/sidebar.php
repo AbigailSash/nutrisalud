@@ -14,10 +14,17 @@ $nombre = $_SESSION['NombreNutri'] ?? 'Usuario';
 $apellido = $_SESSION['ApellidoNutri'] ?? '';
 $matricula = $_SESSION['MatriculaNutri'] ?? '';
 $logoUrl = $_SESSION['LogoNutri'] ?? null;
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
 ?>
 
 <style>
+    :root {
+        --primary-green: <?= htmlspecialchars($colorTema) ?>;
+        --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+        --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
+    }
+
     /* Estilos del Sidebar */
     .sidebar {
         height: 100vh;
@@ -66,7 +73,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
         white-space: nowrap;
         overflow: hidden;
     }
-    .sidebar-brand i { color: #2ecc71; margin-right: 10px; font-size: 1.5rem; }
+    .sidebar-brand i { color: var(--primary-green) !important; margin-right: 10px; font-size: 1.5rem; }
 
     .sidebar-toggle-btn {
         background: transparent;
@@ -103,13 +110,22 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
     .sidebar-menu-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
     .menu-category {
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 0.7rem;
-        font-weight: 700;
+        font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin: 1.5rem 0 0.5rem 25px;
-        white-space: nowrap;
+        color: #64748b;
+        padding: 18px 25px 8px;
+        font-weight: 700;
+    }
+
+    .nav-sidebar {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-sidebar .nav-item {
+        margin-bottom: 3px;
     }
 
     .nav-sidebar .nav-link {
@@ -118,7 +134,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
         font-weight: 500;
         transition: all 0.2s ease;
         margin: 2px 15px;
-        border-radius: 8px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -133,14 +149,15 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
 
     .nav-sidebar .nav-link:hover {
         color: white;
-        background-color: rgba(255,255,255,0.05);
+        background-color: rgba(255,255,255,0.08);
     }
 
     .nav-sidebar .nav-link.active {
-        color: #2ecc71;
-        background-color: rgba(46, 204, 113, 0.1);
+        color: white !important;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green)) !important;
         font-weight: 600;
-        border-left: 3px solid #2ecc71;
+        border-left: 4px solid var(--light-green);
+        box-shadow: 0 4px 15px color-mix(in srgb, var(--primary-green) 40%, transparent);
     }
 
     .nav-link-content {
@@ -158,13 +175,19 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
     body.sidebar-collapsed .nav-sidebar .nav-link i { margin-right: 0; font-size: 1.3rem; }
 
     .nav-sidebar .nav-link:hover i { color: white; }
-    .nav-sidebar .nav-link.active i { color: #2ecc71; }
+    .nav-sidebar .nav-link.active i { color: white !important; }
 
     .badge-menu {
         font-size: 0.7rem;
         padding: 4px 8px;
         border-radius: 12px;
         font-weight: 700;
+        background-color: var(--primary-green) !important;
+        color: white !important;
+    }
+    .nav-sidebar .nav-link.active .badge-menu {
+        background-color: white !important;
+        color: var(--dark-green) !important;
     }
 
     .nav-link-danger { color: #e74c3c !important; }
@@ -190,7 +213,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
         color: white;
         display: flex;
         align-items: center;
@@ -247,7 +270,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
             </li>
             
             <li class="nav-item" data-tooltip="Mis Pacientes">
-                <a class="nav-link <?= is_active(['listar_pacientes', 'crear_paciente', 'editar_paciente'], $currentAction) ?>" href="index.php?action=listar_pacientes">
+                <a class="nav-link <?= is_active(['listar_pacientes', 'crear_paciente', 'editar_paciente', 'ver_historia_clinica'], $currentAction) ?>" href="index.php?action=listar_pacientes">
                     <div class="nav-link-content"><i class="fa-solid fa-users"></i> <span class="nav-link-text">Mis Pacientes</span></div>
                 </a>
             </li>
@@ -261,7 +284,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
             }
             ?>
             <li class="nav-item" data-tooltip="Turnos">
-                <a class="nav-link <?= is_active(['listar_turnos', 'crear_turno'], $currentAction) ?>" href="index.php?action=listar_turnos">
+                <a class="nav-link <?= is_active(['listar_turnos', 'agendar_turno', 'editar_turno'], $currentAction) ?>" href="index.php?action=listar_turnos">
                     <div class="nav-link-content"><i class="fa-solid fa-calendar-check"></i> <span class="nav-link-text">Turnos</span></div>
                     <?php if ($totalTurnosPendientes > 0): ?>
                         <span class="badge bg-success badge-menu"><?= $totalTurnosPendientes ?></span>
@@ -286,19 +309,19 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
             </li>
 
             <li class="nav-item" data-tooltip="Riesgo CV (OPS)">
-                <a class="nav-link" href="https://www.paho.org/cardioapp/web/#/cvrisk" target="_blank">
+                <a class="nav-link" href="https://www.paho.org/cardioapp/web/#/cvrisk" target="_blank" rel="noopener">
                     <div class="nav-link-content"><i class="fa-solid fa-heart-pulse"></i> <span class="nav-link-text">Riesgo CV (OPS)</span></div>
                 </a>
             </li>
 
             <li class="nav-item" data-tooltip="Patrones Crecimiento OMS">
-                <a class="nav-link" href="https://www.who.int/tools/child-growth-standards/standards" target="_blank">
+                <a class="nav-link" href="https://www.who.int/tools/child-growth-standards/standards" target="_blank" rel="noopener">
                     <div class="nav-link-content"><i class="fa-solid fa-child"></i> <span class="nav-link-text">Curvas OMS</span></div>
                 </a>
             </li>
 
             <li class="nav-item" data-tooltip="PubMed">
-                <a class="nav-link" href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank">
+                <a class="nav-link" href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">
                     <div class="nav-link-content"><i class="fa-solid fa-book-medical"></i> <span class="nav-link-text">PubMed (Papers)</span></div>
                 </a>
             </li>
@@ -339,18 +362,17 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
         const toggleBtn = document.getElementById('sidebarToggleBtn');
         const body = document.body;
         
-        // Cargar preferencia desde localStorage
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             body.classList.add('sidebar-collapsed');
         }
         
-        toggleBtn.addEventListener('click', function() {
-            body.classList.toggle('sidebar-collapsed');
-            
-            // Guardar preferencia
-            const isCollapsed = body.classList.contains('sidebar-collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
-        });
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                body.classList.toggle('sidebar-collapsed');
+                const isCollapsed = body.classList.contains('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            });
+        }
     });
 </script>
 

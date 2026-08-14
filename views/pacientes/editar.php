@@ -1,3 +1,6 @@
+<?php
+$colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,9 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --light-green: #eafaf1;
+            --primary-green: <?= htmlspecialchars($colorTema) ?>;
+            --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
+            --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
             --primary-blue: #3498db;
             --dark-blue: #2980b9;
             --text-dark: #2c3e50;

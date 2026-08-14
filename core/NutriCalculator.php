@@ -64,14 +64,26 @@ class NutriCalculator {
     }
 
     /**
-     * Calcula el Índice Cintura-Cadera (ICC)
+     * Calcula el Índice Cintura-Cadera (ICC) y su interpretación clínica de riesgo.
      * @param float $cintura cm
      * @param float $cadera cm
-     * @return float
+     * @param string $sexo 'M' o 'F'
+     * @return array ['valor' => float, 'diagnostico' => string]
      */
-    public static function calcularICC($cintura, $cadera) {
-        if ($cadera <= 0) return 0;
-        return round($cintura / $cadera, 2);
+    public static function calcularICC($cintura, $cadera, $sexo = 'M') {
+        if ($cadera <= 0 || $cintura <= 0) return ['valor' => 0, 'diagnostico' => 'N/A'];
+        $icc = round($cintura / $cadera, 2);
+        $diag = 'Bajo Riesgo';
+        if ($sexo === 'M') {
+            if ($icc < 0.90) $diag = 'Bajo Riesgo (Ginecoide)';
+            elseif ($icc <= 0.94) $diag = 'Riesgo Moderado';
+            else $diag = 'Alto Riesgo (Androide)';
+        } else {
+            if ($icc < 0.80) $diag = 'Bajo Riesgo (Ginecoide)';
+            elseif ($icc <= 0.84) $diag = 'Riesgo Moderado';
+            else $diag = 'Alto Riesgo (Androide)';
+        }
+        return ['valor' => $icc, 'diagnostico' => $diag];
     }
 
     /**

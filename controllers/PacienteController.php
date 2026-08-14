@@ -1,4 +1,5 @@
 <?php
+// controllers/PacienteController.php
 require_once 'models/Paciente.php';
 require_once 'models/HistoriaClinica.php';
 
@@ -10,23 +11,21 @@ class PacienteController {
     }
 
     public function dashboard_paciente() {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() == PHP_SESSION_NONE) session_start();
         $idPaciente = $_SESSION['IdPaciente'] ?? 1;
         $idNutriAsignado = $_SESSION['IdNutriAsignado'] ?? 1;
         
-        // 1. Obtener Datos del Profesional (Single Source of Truth)
+        // 1. Datos del Profesional (Single Source of Truth)
         require_once 'models/Nutricionista.php';
         $nutriModel = new Nutricionista();
         $miProfesional = $nutriModel->obtenerPorId($idNutriAsignado);
         
-        // Formatear mensaje para WhatsApp
+        // Formatear WhatsApp
         $waNum = preg_replace('/[^0-9]/', '', $miProfesional['Whatsapp'] ?? '');
         $waMensaje = urlencode("Hola " . ($miProfesional['Nombre'] ?? 'Doc') . ", soy " . ($_SESSION['NombrePaciente'] ?? 'tu paciente') . " y tengo una consulta sobre mi plan alimentario.");
         $waLink = $waNum ? "https://wa.me/{$waNum}?text={$waMensaje}" : "#";
 
-        // 2. Próximo Turno (KPI Superior)
+        // 2. Próximo Turno
         require_once 'models/Turno.php';
         $turnoModel = new Turno();
         $proximoTurno = $turnoModel->obtenerProximoParaPaciente($idPaciente);
@@ -47,9 +46,7 @@ class PacienteController {
     }
 
     public function mi_plan() {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() == PHP_SESSION_NONE) session_start();
         $idPaciente = $_SESSION['IdPaciente'] ?? 1;
         
         require_once 'models/PlanAlimentario.php';
@@ -57,7 +54,6 @@ class PacienteController {
         
         $planActivo = $planModel->obtenerPlanActivo($idPaciente);
         $planAgrupado = [];
-        $informesVinculados = [];
         
         if ($planActivo) {
             $detalles = $planModel->obtenerDetallesPlan($planActivo['IdPlan']);
@@ -81,30 +77,29 @@ class PacienteController {
     }
 
     public function actualizar_mi_perfil_paciente() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (session_status() == PHP_SESSION_NONE) session_start();
-            $idPaciente = $_SESSION['IdPaciente'];
-            $idNutri = $_SESSION['IdNutriAsignado'];
+            $idPaciente = (int)($_SESSION['IdPaciente'] ?? 0);
             
             $password = $_POST['password'] ?? '';
             $foto = $_FILES['foto'] ?? null;
             
-            // Handle file upload
             $fotoPath = $_POST['foto_actual'] ?? null;
-            if ($foto && $foto['error'] == 0) {
+            if ($foto && $foto['error'] === UPLOAD_ERR_OK) {
                 $dir = 'public/uploads/pacientes/';
                 if (!is_dir($dir)) mkdir($dir, 0777, true);
                 
-                $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
-                $filename = 'paciente_' . $idPaciente . '_' . time() . '.' . $ext;
-                $target = $dir . $filename;
-                
-                if (move_uploaded_file($foto['tmp_name'], $target)) {
-                    $fotoPath = $target;
+                $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                    $filename = 'paciente_' . $idPaciente . '_' . time() . '.' . $ext;
+                    $target = $dir . $filename;
+                    
+                    if (move_uploaded_file($foto['tmp_name'], $target)) {
+                        $fotoPath = $target;
+                    }
                 }
             }
 
-            // Update in DB using a custom method in Paciente model
             $this->model->actualizarCredenciales($idPaciente, $password, $fotoPath);
             
             $_SESSION['mensaje'] = "Perfil actualizado correctamente.";
@@ -115,57 +110,58 @@ class PacienteController {
     }
 
     public function listar_pacientes() {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        $idNutri = $_SESSION['IdNutri'] ?? 1; // Aislamiento SaaS
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $idNutri = $_SESSION['IdNutri'] ?? 1;
         $pacientes = $this->model->leerPorNutricionista($idNutri);
         require_once 'views/pacientes/listar.php';
     }
 
     public function crear_paciente() {
+        if (session_status() == PHP_SESSION_NONE) session_start();
         require_once 'views/pacientes/crear.php';
     }
 
     public function guardar_paciente() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (session_status() == PHP_SESSION_NONE) session_start();
             $idNutri = $_SESSION['IdNutri'] ?? 1;
 
-            $dni = $_POST['dni'] ?? '';
-            $nombre = $_POST['nombre'] ?? '';
-            $apellido = $_POST['apellido'] ?? '';
+            $dni = trim($_POST['dni'] ?? '');
+            $nombre = trim($_POST['nombre'] ?? '');
+            $apellido = trim($_POST['apellido'] ?? '');
             $fecha_nac = $_POST['fecha_nacimiento'] ?? '';
-            $telefono = $_POST['telefono'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $obra_social = $_POST['obra_social'] ?? 'Particular';
+            $telefono = trim($_POST['telefono'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $obra_social = trim($_POST['obra_social'] ?? 'Particular');
 
             if ($this->model->crear($dni, $nombre, $apellido, $fecha_nac, $telefono, $email, $idNutri, $obra_social)) {
-                if (session_status() == PHP_SESSION_NONE) session_start();
-            $_SESSION['mensaje'] = "Operación realizada correctamente.";
-            $_SESSION['tipo_mensaje'] = "success";
-            header("Location: index.php?action=listar_pacientes");
+                $_SESSION['mensaje'] = "Paciente registrado correctamente.";
+                $_SESSION['tipo_mensaje'] = "success";
+                header("Location: index.php?action=listar_pacientes");
                 exit();
             } else {
-                echo "Error al registrar el paciente en la Base de Datos.";
+                $_SESSION['mensaje'] = "Error al registrar el paciente.";
+                $_SESSION['tipo_mensaje'] = "danger";
+                header("Location: index.php?action=crear_paciente");
+                exit();
             }
         }
     }
 
     public function editar_paciente() {
-        $idPaciente = $_GET['id'] ?? null;
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $idPaciente = (int)($_GET['id'] ?? 0);
         if ($idPaciente) {
-            $idNutri = $_SESSION['IdNutri'];
+            $idNutri = $_SESSION['IdNutri'] ?? 1;
             $paciente = $this->model->obtenerPorId($idPaciente, $idNutri);
             if ($paciente) {
-                // Instanciar NutriCalculator para pasar datos a la vista si existen
                 require_once 'core/NutriCalculator.php';
-                $peso = $paciente['Peso'] ?? 0;
-                $estatura_m = ($paciente['Estatura'] ?? 0) / 100; // Asumiendo Estatura en cm en la BD
-                $estatura_cm = $paciente['Estatura'] ?? 0;
-                $sexo = $paciente['Sexo'] ?? 'M'; // 'M' o 'F'
-                $naf = $paciente['Actividad'] ?? 1.2;
+                $peso = (float)($paciente['Peso'] ?? 0);
+                $estatura_m = ((float)($paciente['Estatura'] ?? 0)) / 100;
+                $estatura_cm = (float)($paciente['Estatura'] ?? 0);
+                $sexo = $paciente['Sexo'] ?? 'M';
+                $naf = (float)($paciente['Actividad'] ?? 1.2);
                 
-                // Cálculo de Edad basado en Fecha_Nacimiento
                 $edad = 0;
                 if (!empty($paciente['Fecha_Nacimiento'])) {
                     $fechaNac = new DateTime($paciente['Fecha_Nacimiento']);
@@ -178,67 +174,67 @@ class PacienteController {
                 $calc_geb = NutriCalculator::calcularGEB($peso, $estatura_cm, $edad, $sexo);
                 $calc_get = NutriCalculator::calcularGET($calc_geb, $naf);
 
-                // Si el paciente existe y le pertenece, carga la vista de edición
                 require_once 'views/pacientes/editar.php';
                 return;
             }
         }
-        // Si no existe o intenta editar uno de otro profesional, redirige
-        if (session_status() == PHP_SESSION_NONE) session_start();
-            $_SESSION['mensaje'] = "Operación realizada correctamente.";
-            $_SESSION['tipo_mensaje'] = "success";
-            header("Location: index.php?action=listar_pacientes");
+        $_SESSION['mensaje'] = "Paciente no encontrado.";
+        $_SESSION['tipo_mensaje'] = "warning";
+        header("Location: index.php?action=listar_pacientes");
+        exit();
     }
 
     public function actualizar_paciente() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $idNutri = $_SESSION['IdNutri'];
-            $idPaciente = $_POST['id_paciente'] ?? '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (session_status() == PHP_SESSION_NONE) session_start();
+            $idNutri = $_SESSION['IdNutri'] ?? 1;
+            $idPaciente = (int)($_POST['id_paciente'] ?? 0);
             
-            $dni = $_POST['dni'] ?? '';
-            $nombre = $_POST['nombre'] ?? '';
-            $apellido = $_POST['apellido'] ?? '';
+            $dni = trim($_POST['dni'] ?? '');
+            $nombre = trim($_POST['nombre'] ?? '');
+            $apellido = trim($_POST['apellido'] ?? '');
             $fecha_nac = $_POST['fecha_nacimiento'] ?? '';
-            $telefono = $_POST['telefono'] ?? '';
-            $email = $_POST['email'] ?? '';
+            $telefono = trim($_POST['telefono'] ?? '');
+            $email = trim($_POST['email'] ?? '');
             
-            // Nuevos datos antropométricos
-            $peso = isset($_POST['peso']) && $_POST['peso'] !== '' ? $_POST['peso'] : null;
-            $estatura = isset($_POST['estatura']) && $_POST['estatura'] !== '' ? $_POST['estatura'] : null;
-            $sexo = $_POST['sexo'] ?? null;
-            $actividad = isset($_POST['actividad']) && $_POST['actividad'] !== '' ? $_POST['actividad'] : null;
-            $obra_social = $_POST['obra_social'] ?? 'Particular';
+            $peso = (isset($_POST['peso']) && $_POST['peso'] !== '') ? (float)$_POST['peso'] : null;
+            $estatura = (isset($_POST['estatura']) && $_POST['estatura'] !== '') ? (int)$_POST['estatura'] : null;
+            $sexo = $_POST['sexo'] ?? 'M';
+            $actividad = (isset($_POST['actividad']) && $_POST['actividad'] !== '') ? (float)$_POST['actividad'] : null;
+            $obra_social = trim($_POST['obra_social'] ?? 'Particular');
 
             if ($this->model->actualizar($idPaciente, $dni, $nombre, $apellido, $fecha_nac, $telefono, $email, $idNutri, $peso, $estatura, $sexo, $actividad, $obra_social)) {
-                if (session_status() == PHP_SESSION_NONE) session_start();
-            $_SESSION['mensaje'] = "Operación realizada correctamente.";
-            $_SESSION['tipo_mensaje'] = "success";
-            header("Location: index.php?action=listar_pacientes");
+                $_SESSION['mensaje'] = "Datos del paciente actualizados exitosamente.";
+                $_SESSION['tipo_mensaje'] = "success";
+                header("Location: index.php?action=listar_pacientes");
                 exit();
             } else {
-                echo "Error al actualizar el paciente.";
+                $_SESSION['mensaje'] = "Error al actualizar el paciente.";
+                $_SESSION['tipo_mensaje'] = "danger";
+                header("Location: index.php?action=editar_paciente&id=" . $idPaciente);
+                exit();
             }
         }
     }
 
     public function eliminar_paciente() {
-        $idPaciente = $_GET['id'] ?? null;
-        if ($idPaciente) {
-            $idNutri = $_SESSION['IdNutri'];
-            $this->model->eliminar($idPaciente, $idNutri);
-        }
         if (session_status() == PHP_SESSION_NONE) session_start();
-            $_SESSION['mensaje'] = "Operación realizada correctamente.";
-            $_SESSION['tipo_mensaje'] = "success";
-            header("Location: index.php?action=listar_pacientes");
+        $idPaciente = (int)($_GET['id'] ?? 0);
+        if ($idPaciente) {
+            $idNutri = $_SESSION['IdNutri'] ?? 1;
+            $this->model->eliminar($idPaciente, $idNutri);
+            $_SESSION['mensaje'] = "Paciente eliminado correctamente.";
+            $_SESSION['tipo_mensaje'] = "info";
+        }
+        header("Location: index.php?action=listar_pacientes");
         exit();
     }
 
     public function ver_historia_clinica() {
-        $idPaciente = $_GET['id'] ?? null;
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $idPaciente = (int)($_GET['id'] ?? 0);
         if ($idPaciente) {
-            if (session_status() == PHP_SESSION_NONE) session_start();
-            $idNutri = $_SESSION['IdNutri'];
+            $idNutri = $_SESSION['IdNutri'] ?? 1;
             $paciente = $this->model->obtenerPorId($idPaciente, $idNutri);
             if ($paciente) {
                 $historiaModel = new HistoriaClinica();
@@ -249,24 +245,24 @@ class PacienteController {
                 return;
             }
         }
+        $_SESSION['mensaje'] = "Paciente no encontrado.";
+        $_SESSION['tipo_mensaje'] = "warning";
         header("Location: index.php?action=listar_pacientes");
+        exit();
     }
 
     public function guardar_historia_clinica() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (session_status() == PHP_SESSION_NONE) session_start();
-            $idNutri = $_SESSION['IdNutri'];
-            $idPaciente = $_POST['id_paciente'] ?? null;
+            $idNutri = $_SESSION['IdNutri'] ?? 1;
+            $idPaciente = (int)($_POST['id_paciente'] ?? 0);
             
             if ($idPaciente) {
-                // Extraer campos_custom
                 $camposCustom = $_POST['campos_custom'] ?? [];
                 
-                // Collect all POST data into a JSON string except action, id_paciente and campos_custom
                 $datos = $_POST;
                 unset($datos['id_paciente'], $datos['action'], $datos['campos_custom']);
                 
-                // --- Backend Calculation Integration ---
                 require_once 'services/NutriCalculoService.php';
                 $paciente = $this->model->obtenerPorId($idPaciente, $idNutri);
                 $sexo = $paciente['Sexo'] ?? 'M';
@@ -274,10 +270,12 @@ class PacienteController {
                 $peso = $datos['peso_actual'] ?? 0;
                 $muneca = $datos['circ_muneca'] ?? 0;
                 $pesoUsual = $datos['peso_usual'] ?? 0;
+                $cintura = $datos['circ_cintura'] ?? 0;
+                $cadera = $datos['circ_cadera'] ?? 0;
+                $relacionCC = $datos['relacion_cc'] ?? null;
                 
-                $resultadosAntropo = NutriCalculoService::evaluarAntropometria($talla, $peso, $muneca, $pesoUsual, $sexo);
+                $resultadosAntropo = NutriCalculoService::evaluarAntropometria($talla, $peso, $muneca, $pesoUsual, $sexo, $cintura, $cadera, $relacionCC);
                 $datos = array_merge($datos, $resultadosAntropo);
-                // ---------------------------------------
 
                 $datosJSON = json_encode($datos, JSON_UNESCAPED_UNICODE);
                 $historiaModel = new HistoriaClinica();
@@ -291,19 +289,19 @@ class PacienteController {
             }
         }
         header("Location: index.php?action=listar_pacientes");
+        exit();
     }
 
-    // --- Módulo: Imprimir Ficha Médica ---
     public function imprimir_ficha_medica() {
-        $idPaciente = $_GET['id'] ?? null;
-        if ($idPaciente) {
-            if (session_status() == PHP_SESSION_NONE) session_start();
-            $idNutri = $_SESSION['IdNutri'];
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $idPaciente = (int)($_GET['id'] ?? 0);
+        $idNutri = $_SESSION['IdNutri'] ?? 0;
 
+        if ($idPaciente && $idNutri) {
             $paciente = $this->model->obtenerPorId($idPaciente, $idNutri);
             
             if (!$paciente) {
-                echo "Paciente no encontrado.";
+                echo "<h3 style='font-family:sans-serif; text-align:center; margin-top:50px;'>Paciente no encontrado o sin permisos.</h3>";
                 return;
             }
             
@@ -313,7 +311,7 @@ class PacienteController {
 
             require 'views/pacientes/ficha_medica_print.php';
         } else {
-            echo "ID de paciente inválido.";
+            echo "<h3 style='font-family:sans-serif; text-align:center; margin-top:50px;'>Acceso denegado. Debes iniciar sesión.</h3>";
         }
     }
 }

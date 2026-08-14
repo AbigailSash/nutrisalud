@@ -1,7 +1,10 @@
 <?php
+// services/NutriCalculoService.php
+// Servicio clínico de cálculo y evaluación antropométrica basada en consensos internacionales (OMS / FAO).
+
 class NutriCalculoService {
 
-    public static function evaluarAntropometria($talla, $peso, $muneca, $pesoUsual, $sexo) {
+    public static function evaluarAntropometria($talla, $peso, $muneca, $pesoUsual, $sexo, $cintura = 0, $cadera = 0, $relacionCCManual = null) {
         $resultados = [
             'imc' => null,
             'imc_diagnostico' => null,
@@ -11,6 +14,8 @@ class NutriCalculoService {
             'pct_peso_ideal_diagnostico' => null,
             'contextura' => null,
             'pct_peso_usual' => null,
+            'relacion_cc' => null,
+            'relacion_cc_diagnostico' => null,
             'error' => null
         ];
 
@@ -19,6 +24,9 @@ class NutriCalculoService {
             $peso = (float) $peso;
             $muneca = (float) $muneca;
             $pesoUsual = (float) $pesoUsual;
+            $cintura = (float) $cintura;
+            $cadera = (float) $cadera;
+            $relacionCCManual = !empty($relacionCCManual) ? (float) $relacionCCManual : 0;
 
             if ($talla > 0 && $peso > 0) {
                 // 1. IMC
@@ -72,11 +80,34 @@ class NutriCalculoService {
                 $pctPU = ($peso / $pesoUsual) * 100;
                 $resultados['pct_peso_usual'] = round($pctPU, 2);
             }
+
+            // 5. Relación Cintura / Cadera (ICC) - Manual o Calculado
+            if ($relacionCCManual > 0) {
+                $resultados['relacion_cc'] = round($relacionCCManual, 2);
+                $resultados['relacion_cc_diagnostico'] = self::diagnosticoICC($relacionCCManual, $sexo);
+            } elseif ($cintura > 0 && $cadera > 0) {
+                $icc = $cintura / $cadera;
+                $resultados['relacion_cc'] = round($icc, 2);
+                $resultados['relacion_cc_diagnostico'] = self::diagnosticoICC($icc, $sexo);
+            }
+
         } catch (Exception $e) {
             $resultados['error'] = $e->getMessage();
         }
 
         return $resultados;
+    }
+
+    public static function diagnosticoICC($icc, $sexo) {
+        if ($sexo === 'M') {
+            if ($icc < 0.90) return 'Bajo Riesgo';
+            if ($icc <= 0.94) return 'Riesgo Moderado';
+            return 'Riesgo Alto (Androide)';
+        } else {
+            if ($icc < 0.80) return 'Bajo Riesgo';
+            if ($icc <= 0.84) return 'Riesgo Moderado';
+            return 'Riesgo Alto (Androide)';
+        }
     }
 
     public static function calcularCatabolismo($urea, $diuresis, $protExogenas) {
@@ -93,7 +124,6 @@ class NutriCalculoService {
             if ($protExogenas > 0) {
                 $ic = $nuu - (0.5 * ($protExogenas / 6.25) + 3);
             } else {
-                // Si proteínas exógenas es 0
                 $ic = $nuu - 3;
             }
 

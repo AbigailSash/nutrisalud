@@ -6,10 +6,10 @@
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/core/preflight.php';
 
-// 1. Cargar Controladores de la aplicación
+// 1. Cargar Controladores base de la aplicación
 require_once 'controllers/AuthController.php';
 require_once 'controllers/PacienteController.php';
-require_once 'controllers/PlanController.php';
+require_once 'controllers/PlanAlimentarioController.php';
 require_once 'controllers/TurnoController.php';
 require_once 'controllers/DashboardController.php';
 
@@ -49,46 +49,26 @@ switch ($action) {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
         session_destroy();
         header("Location: index.php?action=landing");
         exit();
         break;
 
     // ==========================================
-    // RUTAS PROTEGIDAS (Requieren Login)
+    // RUTAS DEL PORTAL NUTRICIONISTA (PROTEGIDAS)
     // ==========================================
     case 'dashboard':
         AuthController::verificarSesion();
         $controller = new DashboardController();
         $controller->index();
-        break;
-
-    case 'dashboard_paciente':
-        AuthController::verificarSesionPaciente();
-        require_once 'controllers/PacienteController.php';
-        $controller = new PacienteController();
-        $controller->dashboard_paciente();
-        break;
-
-    case 'mi_plan':
-        AuthController::verificarSesionPaciente();
-        require_once 'controllers/PacienteController.php';
-        $controller = new PacienteController();
-        $controller->mi_plan();
-        break;
-
-    case 'mi_perfil_paciente':
-        AuthController::verificarSesionPaciente();
-        require_once 'controllers/PacienteController.php';
-        $controller = new PacienteController();
-        $controller->mi_perfil_paciente();
-        break;
-
-    case 'actualizar_mi_perfil_paciente':
-        AuthController::verificarSesionPaciente();
-        require_once 'controllers/PacienteController.php';
-        $controller = new PacienteController();
-        $controller->actualizar_mi_perfil_paciente();
         break;
 
     case 'mi_perfil':
@@ -114,7 +94,14 @@ switch ($action) {
         $controller->actualizar_password();
         break;
 
-    // -- ABM DE PACIENTES --
+    case 'actualizar_color_tema':
+        AuthController::verificarSesion();
+        require_once 'controllers/PerfilController.php';
+        $controller = new PerfilController();
+        $controller->actualizar_color_tema();
+        break;
+
+    // -- GESTIÓN DE PACIENTES --
     case 'listar_pacientes':
         AuthController::verificarSesion();
         $controller = new PacienteController();
@@ -162,43 +149,20 @@ switch ($action) {
         $controller = new PacienteController();
         $controller->guardar_historia_clinica();
         break;
+
     case 'imprimir_ficha_medica':
-        require_once 'controllers/PacienteController.php';
+        AuthController::verificarSesion();
         $controller = new PacienteController();
         $controller->imprimir_ficha_medica();
         break;
 
-    // -- ABM DE TURNOS --
+    // -- GESTIÓN DE TURNOS (PROFESIONAL) --
     case 'listar_turnos':
         AuthController::verificarSesion();
         $controller = new TurnoController();
         $controller->listar_turnos();
         break;
 
-    case 'mis_turnos':
-        AuthController::verificarSesionPaciente();
-        $controller = new TurnoController();
-        $controller->mis_turnos();
-        break;
-        
-    case 'solicitar_turno':
-        AuthController::verificarSesionPaciente();
-        $controller = new TurnoController();
-        $controller->solicitar_turno();
-        break;
-
-    case 'guardar_turno_paciente':
-        AuthController::verificarSesionPaciente();
-        $controller = new TurnoController();
-        $controller->guardar_turno_paciente();
-        break;
-
-    case 'cancelar_turno_paciente':
-        AuthController::verificarSesionPaciente();
-        $controller = new TurnoController();
-        $controller->cancelar_turno_paciente();
-        break;
-        
     case 'agendar_turno':
         AuthController::verificarSesion();
         $controller = new TurnoController();
@@ -252,7 +216,11 @@ switch ($action) {
         break;
         
     case 'ver_informe':
-        // Puede ser visto por paciente o nutricionista
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['IdNutri']) && !isset($_SESSION['IdPaciente'])) {
+            header("Location: index.php?action=login_nutri");
+            exit();
+        }
         require_once 'controllers/InformeController.php';
         $controller = new InformeController();
         $controller->ver_informe();
@@ -264,81 +232,119 @@ switch ($action) {
         $controller = new InformeController();
         $controller->eliminar_informe();
         break;
-        
-    case 'guardar_turno_paciente':
-        AuthController::verificarSesionPaciente();
-        require_once 'controllers/TurnoController.php';
-        $controller = new TurnoController();
-        $controller->guardar_turno_paciente();
-        break;
 
-    // -- MÓDULO DE PLANES ALIMENTARIOS --
+    // -- PLANES ALIMENTARIOS --
     case 'listar_planes':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->listar_planes();
         break;
 
     case 'crear_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->crear_plan();
         break;
         
     case 'gestionar_detalles_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->gestionar_detalles_plan();
         break;
 
     case 'agregar_detalle_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->agregar_detalle_plan();
         break;
 
     case 'eliminar_detalle_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->eliminar_detalle_plan();
         break;
 
     case 'eliminar_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->eliminar_plan();
         break;
 
     case 'imprimir_plan':
-        require_once 'controllers/PlanAlimentarioController.php';
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['IdNutri']) && !isset($_SESSION['IdPaciente'])) {
+            header("Location: index.php?action=login_nutri");
+            exit();
+        }
         $controller = new PlanAlimentarioController();
         $controller->imprimir_plan();
         break;
 
     case 'guardar_recomendaciones_plan':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->guardar_recomendaciones_plan();
         break;
 
-
-
     case 'api_buscar_alimento':
         AuthController::verificarSesion();
-        require_once 'controllers/PlanAlimentarioController.php';
         $controller = new PlanAlimentarioController();
         $controller->api_buscar_alimento();
         break;
 
     // ==========================================
-    // RUTAS ADMIN
+    // RUTAS DEL PORTAL PACIENTE (PROTEGIDAS)
+    // ==========================================
+    case 'dashboard_paciente':
+        AuthController::verificarSesionPaciente();
+        $controller = new PacienteController();
+        $controller->dashboard_paciente();
+        break;
+
+    case 'mi_plan':
+        AuthController::verificarSesionPaciente();
+        $controller = new PacienteController();
+        $controller->mi_plan();
+        break;
+
+    case 'mi_perfil_paciente':
+        AuthController::verificarSesionPaciente();
+        $controller = new PacienteController();
+        $controller->mi_perfil_paciente();
+        break;
+
+    case 'actualizar_mi_perfil_paciente':
+        AuthController::verificarSesionPaciente();
+        $controller = new PacienteController();
+        $controller->actualizar_mi_perfil_paciente();
+        break;
+
+    case 'mis_turnos':
+        AuthController::verificarSesionPaciente();
+        $controller = new TurnoController();
+        $controller->mis_turnos();
+        break;
+        
+    case 'solicitar_turno':
+        AuthController::verificarSesionPaciente();
+        $controller = new TurnoController();
+        $controller->solicitar_turno();
+        break;
+
+    case 'guardar_turno_paciente':
+        AuthController::verificarSesionPaciente();
+        $controller = new TurnoController();
+        $controller->guardar_turno_paciente();
+        break;
+
+    case 'cancelar_turno_paciente':
+        AuthController::verificarSesionPaciente();
+        $controller = new TurnoController();
+        $controller->cancelar_turno_paciente();
+        break;
+
+    // ==========================================
+    // RUTAS PANEL ADMINISTRADOR MASTER
     // ==========================================
     case 'admin_dashboard':
         require_once 'controllers/AdminController.php';
@@ -375,7 +381,12 @@ switch ($action) {
     // ==========================================
     default:
         http_response_code(404);
-        echo "<h1 style='text-align:center; margin-top: 50px; font-family: sans-serif; color: #2ecc71;'>404 - Acción no encontrada</h1>";
+        echo "<div style='font-family: system-ui, sans-serif; text-align:center; padding: 60px 20px;'>
+                <h1 style='color: #2ecc71; font-size: 3rem; margin-bottom: 10px;'>404</h1>
+                <h2 style='color: #1e293b; margin-bottom: 20px;'>Página o Acción no encontrada</h2>
+                <p style='color: #64748b; margin-bottom: 30px;'>La ruta solicitada no existe en el sistema NutriSalud.</p>
+                <a href='index.php?action=landing' style='display:inline-block; background:#2ecc71; color:white; padding:12px 24px; text-decoration:none; border-radius:8px; font-weight:600;'>Volver al Inicio</a>
+              </div>";
         break;
 }
 ?>
