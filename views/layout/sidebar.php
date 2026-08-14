@@ -303,7 +303,7 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
             <div class="menu-category">Herramientas</div>
             
             <li class="nav-item" data-tooltip="Calculadora Rápida">
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalCalculadoraRapida">
+                <a class="nav-link" href="javascript:void(0)" onclick="abrirCalculadoraRapida(event)" data-bs-toggle="modal" data-bs-target="#modalCalculadoraRapida">
                     <div class="nav-link-content"><i class="fa-solid fa-calculator"></i> <span class="nav-link-text">Calculadora Rápida</span></div>
                 </a>
             </li>
@@ -374,6 +374,15 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
             });
         }
     });
+
+    window.abrirCalculadoraRapida = function(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        const modalEl = document.getElementById('modalCalculadoraRapida');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    };
 </script>
 
 <?php include 'views/layout/modal_calculadora.php'; ?>

@@ -273,8 +273,8 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
     <div class="modal fade" id="calculadoraModal" tabindex="-1" aria-labelledby="calculadoraModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="calculadoraModalLabel"><i class="fa-solid fa-calculator"></i> Calculadora Nutricional del Paciente</h5>
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
+                    <h5 class="modal-title fw-bold" id="calculadoraModalLabel"><i class="fa-solid fa-calculator me-2"></i> Calculadora Nutricional del Paciente</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body bg-light">
@@ -312,9 +312,9 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <div class="p-3 bg-white shadow-sm rounded border-start border-4 border-success">
+                            <div class="p-3 bg-white shadow-sm rounded border-start border-4" style="border-left-color: var(--primary-green) !important;">
                                 <h6 class="text-muted mb-1">GET (Total)</h6>
-                                <h3 class="mb-0 text-success"><span id="modal_get">0</span> <small class="fs-6">kcal</small></h3>
+                                <h3 class="mb-0 fw-bold" style="color: var(--dark-green);"><span id="modal_get">0</span> <small class="fs-6">kcal</small></h3>
                                 <small class="text-muted">Gasto Diario Total</small>
                             </div>
                         </div>
@@ -327,8 +327,8 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <!-- Opción de Auto-completar Plan (Simulado) -->
-                    <button type="button" class="btn btn-success" onclick="alert('Funcionalidad para aplicar estas calorías a un nuevo plan en desarrollo.')">
-                        <i class="fa-solid fa-check"></i> Usar GET como Objetivo
+                    <button type="button" class="btn btn-gradient rounded-pill px-3" onclick="alert('Funcionalidad para aplicar estas calorías a un nuevo plan en desarrollo.')">
+                        <i class="fa-solid fa-check me-1"></i> Usar GET como Objetivo
                     </button>
                 </div>
             </div>

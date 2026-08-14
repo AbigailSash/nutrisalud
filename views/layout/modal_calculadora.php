@@ -1,21 +1,21 @@
 <!-- Modal Calculadora Rápida -->
 <div class="modal fade" id="modalCalculadoraRapida" tabindex="-1" aria-labelledby="modalCalculadoraRapidaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="modalCalculadoraRapidaLabel"><i class="fa-solid fa-calculator"></i> Suite Clínica Rápida</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
+                <h5 class="modal-title fw-bold" id="modalCalculadoraRapidaLabel"><i class="fa-solid fa-calculator me-2"></i> Suite Clínica Rápida</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
                 <ul class="nav nav-tabs nav-justified" id="calcTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-bold text-success" id="tmb-tab" data-bs-toggle="tab" data-bs-target="#tmb-pane" type="button" role="tab">TMB y Gasto</button>
+                        <button class="nav-link active fw-bold" id="tmb-tab" data-bs-toggle="tab" data-bs-target="#tmb-pane" type="button" role="tab" style="color: var(--dark-green);">TMB y Gasto</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold text-success" id="minerales-tab" data-bs-toggle="tab" data-bs-target="#minerales-pane" type="button" role="tab">Conversor Mineral</button>
+                        <button class="nav-link fw-bold" id="minerales-tab" data-bs-toggle="tab" data-bs-target="#minerales-pane" type="button" role="tab" style="color: var(--dark-green);">Conversor Mineral</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold text-success" id="catabolismo-tab" data-bs-toggle="tab" data-bs-target="#catabolismo-pane" type="button" role="tab">Catabolismo (NUU)</button>
+                        <button class="nav-link fw-bold" id="catabolismo-tab" data-bs-toggle="tab" data-bs-target="#catabolismo-pane" type="button" role="tab" style="color: var(--dark-green);">Catabolismo (NUU)</button>
                     </li>
                 </ul>
                 <div class="tab-content p-4" id="calcTabsContent">
@@ -53,13 +53,13 @@
                             <div class="col-6">
                                 <div class="p-3 bg-light rounded text-center border">
                                     <h6 class="text-muted mb-1">TMB (FAO/OMS)</h6>
-                                    <h3 class="mb-0 text-success" id="res_tmb">-- <small class="fs-6">kcal</small></h3>
+                                    <h3 class="mb-0 fw-bold" id="res_tmb" style="color: var(--dark-green);">-- <small class="fs-6">kcal</small></h3>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="p-3 bg-light rounded text-center border">
                                     <h6 class="text-muted mb-1">VCT (Gasto Total)</h6>
-                                    <h3 class="mb-0 text-primary" id="res_vct">-- <small class="fs-6">kcal</small></h3>
+                                    <h3 class="mb-0 fw-bold text-primary" id="res_vct">-- <small class="fs-6">kcal</small></h3>
                                 </div>
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                             <div class="col-6">
                                 <div class="p-3 bg-light rounded text-center border h-100">
                                     <h6 class="text-muted mb-1">NUU (g/día)</h6>
-                                    <h3 class="mb-0 text-success" id="res_nuu">--</h3>
+                                    <h3 class="mb-0 fw-bold" id="res_nuu" style="color: var(--dark-green);">--</h3>
                                 </div>
                             </div>
                             <div class="col-6">

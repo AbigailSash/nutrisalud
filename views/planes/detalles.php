@@ -50,7 +50,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             max-width: 38px !important;
             max-height: 38px !important;
             border-radius: 50% !important;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             color: white;
             display: inline-flex;
             align-items: center;
@@ -78,7 +78,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             right: -50px;
             width: 150px;
             height: 150px;
-            background: rgba(46, 204, 113, 0.15);
+            background: color-mix(in srgb, var(--primary-green) 20%, transparent);
             border-radius: 50%;
         }
 
@@ -100,9 +100,9 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             background-color: #f1f5f9;
         }
         .nav-tabs-clinical .nav-link.active {
-            color: var(--dark-green);
-            background-color: white;
-            border-bottom: 3px solid var(--primary-green);
+            color: var(--dark-green) !important;
+            background-color: white !important;
+            border-bottom: 3px solid var(--primary-green) !important;
             box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
         }
 
@@ -124,7 +124,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
         }
 
         .momento-title { 
-            color: #16a34a; 
+            color: var(--dark-green); 
             font-weight: 700; 
             border-bottom: 2px solid var(--light-green); 
             padding-bottom: 0.4rem; 
@@ -189,7 +189,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="index.php?action=listar_planes" class="text-decoration-none text-success fw-semibold"><i class="fa-solid fa-apple-whole me-1"></i> Planes Alimentarios</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?action=listar_planes" class="text-decoration-none fw-semibold" style="color: var(--dark-green);"><i class="fa-solid fa-apple-whole me-1" style="color: var(--primary-green);"></i> Planes Alimentarios</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Diseñar Menú & Educación</li>
                     </ol>
                 </nav>
@@ -214,18 +214,18 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
         <!-- Encabezado del Plan y Paciente -->
         <div class="plan-header-card d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <span class="badge bg-success bg-opacity-75 text-white px-3 py-1 rounded-pill mb-2">
+                <span class="badge text-white px-3 py-1 rounded-pill mb-2" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
                     <i class="fa-solid fa-file-waveform me-1"></i> Plan Alimentario & Educación Clínica
                 </span>
                 <h2 class="fw-bold mb-1 text-white"><?= htmlspecialchars($plan['Nombre_Plan']) ?></h2>
                 <p class="mb-0 text-white-50 fs-6">
-                    <i class="fa-solid fa-user me-2 text-success"></i> Paciente: <strong class="text-white"><?= htmlspecialchars($plan['Nombre'] . ' ' . $plan['Apellido']) ?></strong>
+                    <i class="fa-solid fa-user me-2" style="color: var(--primary-green);"></i> Paciente: <strong class="text-white"><?= htmlspecialchars($plan['Nombre'] . ' ' . $plan['Apellido']) ?></strong>
                     <span class="mx-2">•</span>
                     <i class="fa-solid fa-bullseye me-1 text-warning"></i> Objetivo: <?= htmlspecialchars($plan['Objetivo'] ?: 'No especificado') ?>
                 </p>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a href="index.php?action=imprimir_plan&id_plan=<?= $plan['IdPlan'] ?>" target="_blank" class="btn btn-success rounded-pill px-4 fw-semibold shadow-sm">
+                <a href="index.php?action=imprimir_plan&id_plan=<?= $plan['IdPlan'] ?>" target="_blank" class="btn rounded-pill px-4 fw-semibold shadow-sm text-white" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
                     <i class="fa-solid fa-print me-2"></i> Ver / Imprimir Guía (PDF)
                 </a>
                 <a href="index.php?action=listar_planes" class="btn btn-outline-light rounded-pill px-3">
@@ -257,8 +257,8 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                 <!-- Formulario Agregar Alimento / Comida -->
                 <div class="card card-clinical border-0 mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold text-success mb-3">
-                            <i class="fa-solid fa-circle-plus me-2"></i> Prescribir Alimento o Preparación
+                        <h5 class="fw-bold mb-3" style="color: var(--dark-green);">
+                            <i class="fa-solid fa-circle-plus me-2" style="color: var(--primary-green);"></i> Prescribir Alimento o Preparación
                         </h5>
                         <form action="index.php?action=agregar_detalle_plan" method="POST">
                             <input type="hidden" name="id_plan" value="<?= $plan['IdPlan'] ?>">
@@ -295,7 +295,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                                     <input type="text" name="indicaciones" class="form-control" placeholder="Ej: Condimentar con orégano y oliva en crudo. Se puede reemplazar por 1 fruta de estación.">
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="submit" class="btn btn-success w-100 fw-semibold">
+                                    <button type="submit" class="btn w-100 fw-semibold text-white shadow-sm" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
                                         <i class="fa-solid fa-plus me-1"></i> Agregar
                                     </button>
                                 </div>
@@ -306,7 +306,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 
                 <!-- Grilla de la Semana Diseñada -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-calendar-week text-primary me-2"></i> Distribución del Menú Semanal</h5>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-calendar-week me-2" style="color: var(--primary-green);"></i> Distribución del Menú Semanal</h5>
                     <span class="text-muted small">Total: <strong><?= count($detalles) ?></strong> comidas programadas</span>
                 </div>
 
@@ -322,19 +322,19 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                             <div class="col-lg-6 mb-4">
                                 <div class="card card-clinical h-100">
                                     <div class="card-header-day d-flex justify-content-between align-items-center">
-                                        <span><i class="fa-regular fa-calendar-check text-success me-2"></i> <?= htmlspecialchars($nombreDia) ?></span>
+                                        <span><i class="fa-regular fa-calendar-check me-2" style="color: var(--primary-green);"></i> <?= htmlspecialchars($nombreDia) ?></span>
                                     </div>
                                     <div class="card-body p-3">
                                         <?php foreach($momentosAgrupados as $nombreMomento => $listaAlimentos): ?>
                                             <div class="momento-title">
-                                                <i class="fa-regular fa-clock me-2"></i> <?= htmlspecialchars($nombreMomento) ?>
+                                                <i class="fa-regular fa-clock me-2" style="color: var(--primary-green);"></i> <?= htmlspecialchars($nombreMomento) ?>
                                             </div>
                                             <?php foreach($listaAlimentos as $item): ?>
                                                 <div class="food-item">
                                                     <div>
                                                         <strong><?= htmlspecialchars($item['Alimento']) ?></strong>
                                                         <?php if(!empty($item['Cantidad'])): ?>
-                                                            <span class="badge bg-light text-dark border ms-2"><?= htmlspecialchars($item['Cantidad']) ?></span>
+                                                             <span class="badge bg-light text-dark border ms-2"><?= htmlspecialchars($item['Cantidad']) ?></span>
                                                         <?php endif; ?>
                                                         <?php if(!empty($item['Indicaciones_Especiales'])): ?>
                                                             <br><small class="text-muted fst-italic">"<?= htmlspecialchars($item['Indicaciones_Especiales']) ?>"</small>
@@ -364,7 +364,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                             <div>
                                 <h5 class="fw-bold text-dark mb-1">
-                                    <i class="fa-solid fa-graduation-cap text-primary me-2"></i> Pautas de Educación Nutricional e Informe Clínico
+                                    <i class="fa-solid fa-graduation-cap me-2" style="color: var(--primary-green);"></i> Pautas de Educación Nutricional e Informe Clínico
                                 </h5>
                                 <p class="text-muted small mb-0">Estas recomendaciones acompañarán al menú en el portal del paciente y en el PDF descargable.</p>
                             </div>
@@ -383,7 +383,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                                     <i class="fa-solid fa-fire-burner text-danger"></i> Métodos de Cocción
                                 </span>
                                 <span class="template-pill" onclick="insertarPauta('saciedad')">
-                                    <i class="fa-solid fa-apple-whole text-success"></i> Saciedad y Masticación
+                                    <i class="fa-solid fa-apple-whole" style="color: var(--primary-green);"></i> Saciedad y Masticación
                                 </span>
                                 <span class="template-pill" onclick="insertarPauta('etiquetas')">
                                     <i class="fa-solid fa-tag text-primary"></i> Lectura de Etiquetas
@@ -403,8 +403,8 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                                 <textarea id="textareaRecomendaciones" class="form-control" name="recomendaciones" rows="12" placeholder="Redacta o inserta aquí las pautas de educación nutricional para tu paciente..." style="border-radius: 12px; font-size: 0.95rem; line-height: 1.6;"><?= htmlspecialchars($plan['Recomendaciones'] ?? '') ?></textarea>
                             </div>
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <span class="text-muted small"><i class="fa-solid fa-circle-check text-success me-1"></i> El paciente podrá acceder a estas pautas desde su portal o descargarlas en PDF.</span>
-                                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                <span class="text-muted small"><i class="fa-solid fa-circle-check me-1" style="color: var(--primary-green);"></i> El paciente podrá acceder a estas pautas desde su portal o descargarlas en PDF.</span>
+                                <button type="submit" class="btn rounded-pill px-4 py-2 fw-bold text-white shadow-sm" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
                                     <i class="fa-solid fa-save me-2"></i> Guardar Educación Nutricional
                                 </button>
                             </div>
