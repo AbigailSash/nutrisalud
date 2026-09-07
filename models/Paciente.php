@@ -53,6 +53,23 @@ class Paciente {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerPorEmail($email) {
+        $sql = "SELECT * FROM paciente WHERE Email = :email LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function cambiarPassword($idPaciente, $nuevoPassword) {
+        $hash = password_hash($nuevoPassword, PASSWORD_BCRYPT);
+        $sql = "UPDATE paciente SET Password = :hash WHERE IdPaciente = :id";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':hash', $hash, PDO::PARAM_STR);
+        $stmt->bindParam(':id', $idPaciente, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
     public function actualizar($idPaciente, $dni, $nombre, $apellido, $fecha_nacimiento, $telefono, $email, $idNutri, $peso = null, $estatura = null, $sexo = null, $actividad = null, $obra_social = 'Particular') {
         $sql = "UPDATE paciente 
                 SET DNI = :dni, Nombre = :nombre, Apellido = :apellido, Fecha_Nacimiento = :fecha_nac, 

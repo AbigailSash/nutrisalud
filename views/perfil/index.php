@@ -226,15 +226,30 @@
                     <form action="index.php?action=actualizar_password" method="POST">
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted small">Contraseña Actual</label>
-                            <input type="password" name="password_actual" class="form-control" placeholder="••••••••">
+                            <div class="input-group">
+                                <input type="password" name="password_actual" class="form-control" placeholder="••••••••" style="border-right: none;">
+                                <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted small">Nueva Contraseña</label>
-                            <input type="password" name="nueva_password" class="form-control" placeholder="••••••••" required minlength="6">
+                            <div class="input-group">
+                                <input type="password" name="nueva_password" class="form-control" placeholder="••••••••" required minlength="6" style="border-right: none;">
+                                <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-bold text-muted small">Confirmar Nueva Contraseña</label>
-                            <input type="password" name="confirmar_password" class="form-control" placeholder="••••••••" required minlength="6">
+                            <div class="input-group">
+                                <input type="password" name="confirmar_password" class="form-control" placeholder="••••••••" required minlength="6" style="border-right: none;">
+                                <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-gradient w-100 rounded-pill fw-bold py-2 shadow-sm">
                             <i class="fa-solid fa-key me-2"></i> Actualizar Contraseña

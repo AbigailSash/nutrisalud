@@ -268,6 +268,19 @@ INSERT IGNORE INTO `alimento` (`IdAlimento`, `Nombre_Alimento`, `Calorias_100g`,
 -- Usuario Administrador Principal (Email: admin@nutrisalud.com / Password: admin123)
 -- Hash bcrypt para 'admin123'
 INSERT IGNORE INTO `nutricionista` (`IdNutri`, `DNI`, `Matricula`, `Nombre`, `Apellido`, `Email`, `Password_Hash`, `Rol`, `Telefono`, `Estado_Cuenta`, `Especialidad`, `Direccion`, `Biografia`) VALUES
-(1, '00000001', 'MN-ADMIN-01', 'Admin', 'NutriSalud', 'admin@nutrisalud.com', '$2y$10$iMfv0Q0z7d1fO9G3qNfJveFmg0p/lHk8v2q9kM7Vl4Wj1Y2e5q6r.', 'admin', '+54 9 11 0000-0000', 'A', 'Administrador del Sistema', 'Sede Central', 'Cuenta de Administración Master.');
+-- 14. TABLA: password_resets (Tokens seguros de recuperación de contraseña)
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `IdReset` INT(11) NOT NULL AUTO_INCREMENT,
+  `Email` VARCHAR(150) NOT NULL,
+  `Token` VARCHAR(64) NOT NULL,
+  `Tipo_Usuario` ENUM('nutricionista', 'paciente') NOT NULL,
+  `Expires_At` DATETIME NOT NULL,
+  `Used_At` DATETIME NULL DEFAULT NULL,
+  `Created_At` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`IdReset`),
+  UNIQUE KEY `uq_token` (`Token`),
+  KEY `idx_email_tipo` (`Email`, `Tipo_Usuario`),
+  KEY `idx_token_expires` (`Token`, `Expires_At`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

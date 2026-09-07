@@ -13,33 +13,44 @@ class PacienteController {
     public function dashboard_paciente() {
         if (session_status() == PHP_SESSION_NONE) session_start();
         $idPaciente = $_SESSION['IdPaciente'] ?? 1;
-        $idNutriAsignado = $_SESSION['IdNutriAsignado'] ?? 1;
         
-        // 1. Datos del Profesional (Single Source of Truth)
+        // 1. Obtener paciente para determinar con exactitud su Nutricionista asignado
+        $pacienteData = $this->model->obtenerPorIdSolo($idPaciente);
+        $idNutriAsignado = $pacienteData['IdNutri'] ?? ($_SESSION['IdNutriAsignado'] ?? 1);
+        
+        // 2. Datos del Profesional (Single Source of Truth)
         require_once 'models/Nutricionista.php';
         $nutriModel = new Nutricionista();
-        $miProfesional = $nutriModel->obtenerPorId($idNutriAsignado);
+        $nutricionista = $nutriModel->obtenerPorId($idNutriAsignado);
         
-        // Formatear WhatsApp
-        $waNum = preg_replace('/[^0-9]/', '', $miProfesional['Whatsapp'] ?? '');
-        $waMensaje = urlencode("Hola " . ($miProfesional['Nombre'] ?? 'Doc') . ", soy " . ($_SESSION['NombrePaciente'] ?? 'tu paciente') . " y tengo una consulta sobre mi plan alimentario.");
-        $waLink = $waNum ? "https://wa.me/{$waNum}?text={$waMensaje}" : "#";
+        if (!empty($nutricionista['Color_Tema'])) {
+            $_SESSION['ColorTema'] = $nutricionista['Color_Tema'];
+        }
+        $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 
-        // 2. Próximo Turno
+        // 3. Próximo Turno
         require_once 'models/Turno.php';
         $turnoModel = new Turno();
         $proximoTurno = $turnoModel->obtenerProximoParaPaciente($idPaciente);
 
-        // 3. Plan Activo y Detalles de Hoy
+        // 4. Plan Activo y Detalles de Hoy
         require_once 'models/PlanAlimentario.php';
         $planModel = new PlanAlimentario();
         
         $planActivo = $planModel->obtenerPlanActivo($idPaciente);
-        $detallesHoy = [];
         
+        $diasNombres = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
+        $diaHoy = (int)date('N'); // 1 = Lunes, 7 = Domingo
+        $nombreDiaHoy = $diasNombres[$diaHoy] ?? 'Hoy';
+        
+        $comidasHoy = [];
         if ($planActivo) {
-            $diaHoy = date('N'); // 1 = Lunes, 7 = Domingo
             $detallesHoy = $planModel->obtenerDetallesPlanHoy($planActivo['IdPlan'], $diaHoy);
+            if (!empty($detallesHoy)) {
+                foreach($detallesHoy as $item) {
+                    $comidasHoy[$item['Momento_Comida']][] = $item;
+                }
+            }
         }
 
         require_once 'views/pacientes/dashboard_paciente.php';
@@ -135,7 +146,21 @@ class PacienteController {
             $obra_social = trim($_POST['obra_social'] ?? 'Particular');
 
             if ($this->model->crear($dni, $nombre, $apellido, $fecha_nac, $telefono, $email, $idNutri, $obra_social)) {
-                $_SESSION['mensaje'] = "Paciente registrado correctamente.";
+                // Obtener datos del profesional para personalizar el correo institucional
+                require_once 'models/Nutricionista.php';
+                $nutriModel = new Nutricionista();
+                $nutri = $nutriModel->obtenerPorId($idNutri);
+
+                // Envío automático de correo con credenciales de acceso
+                if (!empty($email)) {
+                    require_once 'services/EmailService.php';
+                    $claveInicial = $dni; // La contraseña inicial por defecto es el DNI
+                    EmailService::enviarCredencialesAltaPaciente($email, $nombre, $apellido, $dni, $claveInicial, $nutri ?: []);
+                    $_SESSION['mensaje'] = "Paciente registrado correctamente. Se enviaron las credenciales de acceso a {$email}.";
+                } else {
+                    $_SESSION['mensaje'] = "Paciente registrado correctamente.";
+                }
+
                 $_SESSION['tipo_mensaje'] = "success";
                 header("Location: index.php?action=listar_pacientes");
                 exit();

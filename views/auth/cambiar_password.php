@@ -25,13 +25,23 @@
                         <form action="index.php?action=procesar_cambiar_password" method="POST">
                             <div class="mb-3">
                                 <label class="form-label">Nueva Contraseña</label>
-                                <input type="password" name="nueva_password" class="form-control" required minlength="6">
+                                <div class="input-group">
+                                    <input type="password" name="nueva_password" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres" style="border-right: none;">
+                                    <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="mb-4">
                                 <label class="form-label">Confirmar Contraseña</label>
-                                <input type="password" name="confirmar_password" class="form-control" required minlength="6">
+                                <div class="input-group">
+                                    <input type="password" name="confirmar_password" class="form-control" required minlength="6" placeholder="Repite la nueva contraseña" style="border-right: none;">
+                                    <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-success w-100">Guardar Contraseña</button>
+                            <button type="submit" class="btn btn-gradient w-100 rounded-pill py-2 fw-bold">Guardar Contraseña</button>
                         </form>
                         
                         <div class="text-center mt-3">

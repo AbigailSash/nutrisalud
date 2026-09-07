@@ -1,5 +1,10 @@
 <?php
 $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
+$nombreDiaHoy = $nombreDiaHoy ?? 'Hoy';
+$comidasHoy = $comidasHoy ?? [];
+$nutricionista = $nutricionista ?? null;
+$planActivo = $planActivo ?? null;
+$proximoTurno = $proximoTurno ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="es">

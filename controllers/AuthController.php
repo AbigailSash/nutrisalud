@@ -119,5 +119,150 @@ class AuthController {
             require_once 'views/auth/cambiar_password.php';
         }
     }
+
+    public function mostrarRecuperarPassword() {
+        require_once 'views/auth/recuperar_password.php';
+    }
+
+    public function procesarSolicitarRecuperar() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim(strtolower($_POST['email'] ?? ''));
+            $tipoUsuario = ($_POST['tipo_usuario'] ?? '') === 'paciente' ? 'paciente' : 'nutricionista';
+
+            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                require_once 'models/PasswordReset.php';
+                require_once 'services/EmailService.php';
+
+                $resetModel = new PasswordReset();
+                $usuarioExiste = false;
+                $nombreUsuario = 'Usuario';
+                $colorTema = '#2ecc71';
+
+                if ($tipoUsuario === 'nutricionista') {
+                    $nutri = $this->model->obtenerPorEmail($email);
+                    if ($nutri) {
+                        $usuarioExiste = true;
+                        $nombreUsuario = $nutri['Nombre'] . ' ' . $nutri['Apellido'];
+                        $colorTema = $nutri['Color_Tema'] ?? '#2ecc71';
+                    }
+                } else {
+                    $paciente = $this->pacienteModel->obtenerPorEmail($email);
+                    if ($paciente) {
+                        $usuarioExiste = true;
+                        $nombreUsuario = $paciente['Nombre'] . ' ' . $paciente['Apellido'];
+                        // Cargar color del profesional asignado si existe
+                        if (!empty($paciente['IdNutri'])) {
+                            $nutriAsignado = $this->model->obtenerPorId($paciente['IdNutri']);
+                            if ($nutriAsignado && !empty($nutriAsignado['Color_Tema'])) {
+                                $colorTema = $nutriAsignado['Color_Tema'];
+                            }
+                        }
+                    }
+                }
+
+                if ($usuarioExiste) {
+                    $tokenData = $resetModel->crearToken($email, $tipoUsuario, 30);
+                    if ($tokenData) {
+                        $baseUrl = defined('BASE_URL') ? BASE_URL : 'http://localhost:8000/';
+                        $resetUrl = $baseUrl . 'index.php?action=restablecer_password&token=' . urlencode($tokenData['token']);
+                        
+                        EmailService::enviarRecuperacionPassword(
+                            $email,
+                            $nombreUsuario,
+                            $resetUrl,
+                            $tipoUsuario,
+                            $tokenData['minutos'],
+                            $colorTema
+                        );
+                    }
+                }
+
+                // Respuesta genérica por seguridad para evitar enumeración de cuentas
+                $mensajeExito = "Si el correo ingresado coincide con una cuenta activa, recibirás un enlace para restablecer tu contraseña en los próximos minutos.";
+                require_once 'views/auth/recuperar_password.php';
+                return;
+            } else {
+                $error = "Por favor, ingresa un correo electrónico válido.";
+                require_once 'views/auth/recuperar_password.php';
+                return;
+            }
+        }
+    }
+
+    public function mostrarRestablecerPassword() {
+        $token = trim($_GET['token'] ?? '');
+        require_once 'models/PasswordReset.php';
+        $resetModel = new PasswordReset();
+        $tokenValido = $resetModel->validarToken($token);
+
+        require_once 'views/auth/restablecer_password.php';
+    }
+
+    public function procesarRestablecerPassword() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = trim($_POST['token'] ?? '');
+            $nuevaPassword = $_POST['nueva_password'] ?? '';
+            $confirmarPassword = $_POST['confirmar_password'] ?? '';
+
+            require_once 'models/PasswordReset.php';
+            $resetModel = new PasswordReset();
+            $tokenValido = $resetModel->validarToken($token);
+
+            if (!$tokenValido) {
+                $tokenValido = false;
+                $error = "El enlace de recuperación ha expirado o ya no es válido.";
+                require_once 'views/auth/restablecer_password.php';
+                return;
+            }
+
+            if (empty($nuevaPassword) || strlen($nuevaPassword) < 6) {
+                $error = "La nueva contraseña debe tener al menos 6 caracteres.";
+                require_once 'views/auth/restablecer_password.php';
+                return;
+            }
+
+            if ($nuevaPassword !== $confirmarPassword) {
+                $error = "Las contraseñas no coinciden. Por favor, verifícalas.";
+                require_once 'views/auth/restablecer_password.php';
+                return;
+            }
+
+            $email = $tokenValido['Email'];
+            $tipoUsuario = $tokenValido['Tipo_Usuario'];
+            $actualizado = false;
+
+            if ($tipoUsuario === 'nutricionista') {
+                $nutri = $this->model->obtenerPorEmail($email);
+                if ($nutri) {
+                    $actualizado = $this->model->cambiarPassword($nutri['IdNutri'], $nuevaPassword);
+                }
+            } else {
+                $paciente = $this->pacienteModel->obtenerPorEmail($email);
+                if ($paciente) {
+                    $actualizado = $this->pacienteModel->cambiarPassword($paciente['IdPaciente'], $nuevaPassword);
+                }
+            }
+
+            if ($actualizado) {
+                // Invalida el token para que no pueda ser reutilizado
+                $resetModel->marcarComoUsado($token);
+
+                if (session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['mensaje'] = "Tu contraseña ha sido actualizada con éxito. Ya puedes iniciar sesión con tu nueva clave.";
+                $_SESSION['tipo_mensaje'] = "success";
+
+                if ($tipoUsuario === 'paciente') {
+                    header("Location: index.php?action=login_paciente");
+                } else {
+                    header("Location: index.php?action=login_nutri");
+                }
+                exit();
+            } else {
+                $error = "Ocurrió un error al actualizar la contraseña. Inténtalo nuevamente.";
+                require_once 'views/auth/restablecer_password.php';
+                return;
+            }
+        }
+    }
 }
 ?>

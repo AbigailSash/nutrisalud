@@ -50,6 +50,19 @@ $globalColorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
         color: var(--dark-green) !important;
         border-bottom: 3px solid var(--primary-green) !important;
     }
+    .btn-toggle-password {
+        border-left: none !important;
+        background-color: #f8fafc !important;
+        border-color: #e1e8ed !important;
+        color: #64748b !important;
+        cursor: pointer;
+        padding-right: 15px;
+        transition: all 0.2s ease;
+    }
+    .btn-toggle-password:hover, .btn-toggle-password:focus {
+        color: var(--primary-green) !important;
+        background-color: #f1f5f9 !important;
+    }
 </style>
 
 <script>
@@ -101,6 +114,38 @@ $globalColorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                 }
             });
         });
+    });
+
+    // Delegación global para Toggle de Visibilidad de Contraseñas (Show/Hide)
+    document.addEventListener("click", function(e) {
+        const toggleBtn = e.target.closest(".btn-toggle-password, [data-toggle-password]");
+        if (toggleBtn) {
+            e.preventDefault();
+            const inputGroup = toggleBtn.closest(".input-group") || toggleBtn.parentElement;
+            const passwordInput = inputGroup.querySelector("input[type='password'], input[data-is-password='true']");
+            const icon = toggleBtn.querySelector("i");
+            
+            if (passwordInput) {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    passwordInput.setAttribute("data-is-password", "true");
+                    if (icon) {
+                        icon.classList.remove("fa-eye");
+                        icon.classList.add("fa-eye-slash");
+                    }
+                    toggleBtn.setAttribute("aria-label", "Ocultar contraseña");
+                    toggleBtn.setAttribute("title", "Ocultar contraseña");
+                } else {
+                    passwordInput.type = "password";
+                    if (icon) {
+                        icon.classList.remove("fa-eye-slash");
+                        icon.classList.add("fa-eye");
+                    }
+                    toggleBtn.setAttribute("aria-label", "Mostrar contraseña");
+                    toggleBtn.setAttribute("title", "Mostrar contraseña");
+                }
+            }
+        }
     });
 
     // Sincronización en vivo de variables CSS globales de tema

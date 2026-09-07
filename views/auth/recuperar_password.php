@@ -1,9 +1,10 @@
+<!-- views/auth/recuperar_password.php -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriSalud - Login Profesional</title>
+    <title>NutriSalud - Recuperar Contraseña</title>
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,6 +26,7 @@
             align-items: center;
             justify-content: center;
             color: var(--text-dark);
+            padding: 20px;
         }
         
         .login-card {
@@ -39,13 +41,12 @@
         
         .login-header {
             background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-            padding: 40px 20px;
+            padding: 35px 20px;
             text-align: center;
             color: white;
             position: relative;
         }
 
-        /* Curva decorativa en el header */
         .login-header::after {
             content: '';
             position: absolute;
@@ -105,7 +106,7 @@
             transition: all 0.3s;
             box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
             width: 100%;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             margin-top: 15px;
         }
         
@@ -120,55 +121,74 @@
             transition: color 0.3s;
         }
         .back-link:hover { color: var(--primary-green); }
-
     </style>
 </head>
 <body>
     <div class="container d-flex justify-content-center">
         <div class="login-card">
             <div class="login-header">
-                <i class="fa-solid fa-leaf fs-1 mb-2"></i>
-                <h3 class="fw-bold mb-1">NutriSalud</h3>
-                <p class="mb-0 text-white-50" style="font-weight: 500;">Portal para Profesionales</p>
+                <i class="fa-solid fa-key fs-1 mb-2"></i>
+                <h3 class="fw-bold mb-1">Recuperar Acceso</h3>
+                <p class="mb-0 text-white-50" style="font-weight: 500;">NutriSalud Seguridad</p>
             </div>
             <div class="login-body">
-                <h5 class="text-center text-dark mb-4 fw-bold fs-4">Iniciar Sesión</h5>
+                <h5 class="text-center text-dark mb-2 fw-bold fs-5">¿Olvidaste tu Contraseña?</h5>
+                <p class="text-center text-muted small mb-4">Ingresa tu correo electrónico y te enviaremos un enlace seguro para restablecerla.</p>
                 
-                <?php if (isset($error)): ?>
+                <?php if (!empty($mensajeExito)): ?>
+                    <div class="alert alert-success shadow-sm border-0 py-3" style="border-radius: 12px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-circle-check fs-4 text-success"></i>
+                            <div>
+                                <strong class="d-block">¡Solicitud Procesada!</strong>
+                                <span class="small"><?= htmlspecialchars($mensajeExito) ?></span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($error)): ?>
                     <div class="alert alert-danger text-center shadow-sm border-0 py-2" style="border-radius: 10px;">
                         <i class="fa-solid fa-triangle-exclamation me-1"></i> <?= htmlspecialchars($error) ?>
                     </div>
                 <?php endif; ?>
 
-                <form action="index.php?action=procesar_login_nutri" method="POST">
+                <?php if (empty($mensajeExito)): ?>
+                <form action="index.php?action=procesar_solicitar_recuperar" method="POST">
+                    <input type="hidden" name="tipo" value="<?= htmlspecialchars($_GET['tipo'] ?? 'nutri') ?>">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Cuenta</label>
+                        <select name="tipo_usuario" class="form-select shadow-sm" style="border-radius: 12px; padding: 12px;">
+                            <option value="nutricionista" <?= (($_GET['tipo'] ?? '') === 'nutri') ? 'selected' : '' ?>>Soy Nutricionista / Profesional</option>
+                            <option value="paciente" <?= (($_GET['tipo'] ?? '') === 'paciente') ? 'selected' : '' ?>>Soy Paciente</option>
+                        </select>
+                    </div>
+
                     <div class="mb-4">
-                        <label class="form-label">Identificador (DNI o Correo)</label>
+                        <label class="form-label">Correo Electrónico Registrado</label>
                         <div class="input-group">
-                            <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-user"></i></span>
-                            <input type="text" name="identificador" class="form-control rounded-end-pill" placeholder="tu@email.com o DNI" required>
+                            <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" name="email" class="form-control rounded-end-pill" placeholder="tu@correo.com" required>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="Tu contraseña (123456 por defecto)" required style="border-right: none;">
-                            <button type="button" class="btn btn-toggle-password rounded-end-pill input-group-text" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-end mb-4">
-                        <a href="index.php?action=recuperar_password&tipo=nutri" class="text-success text-decoration-none small fw-medium" style="color: var(--primary-green) !important;">¿Olvidaste tu contraseña?</a>
-                    </div>
+
                     <button type="submit" class="btn-gradient mb-4">
-                        Ingresar al Consultorio <i class="fa-solid fa-arrow-right ms-2"></i>
+                        <i class="fa-solid fa-paper-plane me-2"></i> Enviar Enlace de Recuperación
                     </button>
                 </form>
-                <div class="text-center">
-                    <a href="index.php?action=landing" class="text-decoration-none small fw-medium back-link">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Volver a la página principal
-                    </a>
+                <?php endif; ?>
+
+                <div class="text-center pt-2">
+                    <?php if (($_GET['tipo'] ?? '') === 'paciente'): ?>
+                        <a href="index.php?action=login_paciente" class="text-decoration-none small fw-medium back-link">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Iniciar Sesión Paciente
+                        </a>
+                    <?php else: ?>
+                        <a href="index.php?action=login_nutri" class="text-decoration-none small fw-medium back-link">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Iniciar Sesión Profesional
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

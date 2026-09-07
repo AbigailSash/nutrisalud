@@ -21,10 +21,10 @@ if ($is_local) {
     $host = $is_cli ? 'localhost' : ($_SERVER['HTTP_HOST'] ?? 'localhost');
     define('BASE_URL', 'http://' . $host . $base_path . '/');
 } else {
-    // Entorno de Producción
-    define('DB_HOST', 'localhost'); // Usualmente localhost en producción también, pero cambiar si es externo
-    define('DB_NAME', 'produccion_nutrisalud');
-    define('DB_USER', 'produccion_usuario');
-    define('DB_PASS', 'produccion_password');
+    // Entorno de Producción (Hostinger)
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'u362815695_db_kXQsyWTf');
+    define('DB_USER', 'u362815695_usr_kXQsyWTf');
+    define('DB_PASS', 'L!jjAUt6');
     define('BASE_URL', 'https://' . $_SERVER['HTTP_HOST'] . '/');
 }

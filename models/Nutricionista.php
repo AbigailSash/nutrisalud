@@ -46,6 +46,14 @@ class Nutricionista {
         return $stmt->fetch();
     }
 
+    public function obtenerPorEmail($email) {
+        $sql = "SELECT * FROM nutricionista WHERE Email = :email AND Estado_Cuenta = 'A' LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function actualizarColorTema($idNutri, $colorTema) {
         // Validar formato hex color
         if (!preg_match('/^#[a-f0-9]{6}$/i', $colorTema) && !preg_match('/^#[a-f0-9]{3}$/i', $colorTema)) {

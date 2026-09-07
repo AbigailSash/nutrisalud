@@ -77,7 +77,12 @@ if (strpos($fotoUrl, 'public/') === false && $fotoUrl !== 'public/assets/img/def
 
                         <div class="mb-3">
                             <label class="form-label">Nueva Contraseña</label>
-                            <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para mantener la actual">
+                            <div class="input-group">
+                                <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para mantener la actual" style="border-right: none;">
+                                <button type="button" class="btn btn-toggle-password input-group-text border" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="text-end mt-4">

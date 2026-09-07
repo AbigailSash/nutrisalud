@@ -45,6 +45,26 @@ switch ($action) {
         $auth->procesarLoginNutri();
         break;
 
+    case 'recuperar_password':
+        $auth = new AuthController();
+        $auth->mostrarRecuperarPassword();
+        break;
+
+    case 'procesar_solicitar_recuperar':
+        $auth = new AuthController();
+        $auth->procesarSolicitarRecuperar();
+        break;
+
+    case 'restablecer_password':
+        $auth = new AuthController();
+        $auth->mostrarRestablecerPassword();
+        break;
+
+    case 'procesar_restablecer_password':
+        $auth = new AuthController();
+        $auth->procesarRestablecerPassword();
+        break;
+
     case 'logout':
         if (session_status() == PHP_SESSION_NONE) {
             session_start();

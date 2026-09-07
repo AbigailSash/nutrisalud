@@ -152,8 +152,14 @@
                         <label class="form-label">Contraseña (o Correo si no la cambiaste)</label>
                         <div class="input-group">
                             <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" name="email" class="form-control rounded-end-pill" placeholder="Ingresa tu contraseña o email" required>
+                            <input type="password" name="email" class="form-control" placeholder="Ingresa tu contraseña o email" required style="border-right: none;">
+                            <button type="button" class="btn btn-toggle-password rounded-end-pill input-group-text" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </div>
+                    </div>
+                    <div class="text-end mb-4">
+                        <a href="index.php?action=recuperar_password&tipo=paciente" class="text-primary text-decoration-none small fw-medium">¿Olvidaste tu contraseña?</a>
                     </div>
                     <button type="submit" class="btn-gradient mb-4">
                         Ingresar <i class="fa-solid fa-arrow-right ms-2"></i>
