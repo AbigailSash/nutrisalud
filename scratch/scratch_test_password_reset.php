@@ -2,12 +2,12 @@
 // scratch_test_password_reset.php
 // Suite de pruebas automatizadas para el flujo de recuperación de contraseña.
 
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/config/Conexion.php';
-require_once __DIR__ . '/models/PasswordReset.php';
-require_once __DIR__ . '/models/Nutricionista.php';
-require_once __DIR__ . '/models/Paciente.php';
-require_once __DIR__ . '/services/EmailService.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/Conexion.php';
+require_once __DIR__ . '/../models/PasswordReset.php';
+require_once __DIR__ . '/../models/Nutricionista.php';
+require_once __DIR__ . '/../models/Paciente.php';
+require_once __DIR__ . '/../services/EmailService.php';
 
 echo "========================================================\n";
 echo "    TEST SUITE: RECUPERACIÓN SEGURA DE CONTRASEÑA       \n";

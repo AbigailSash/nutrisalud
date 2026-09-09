@@ -23,8 +23,8 @@ if ($is_local) {
 } else {
     // Entorno de Producción (Hostinger)
     define('DB_HOST', 'localhost');
-    define('DB_NAME', 'u362815695_db_kXQsyWTf');
-    define('DB_USER', 'u362815695_usr_kXQsyWTf');
+    define('DB_NAME', 'u362815695_db_yRSksOSf');
+    define('DB_USER', 'u362815695_usr_yRSksOSf');
     define('DB_PASS', 'L!jjAUt6');
     define('BASE_URL', 'https://' . $_SERVER['HTTP_HOST'] . '/');
 }

@@ -535,7 +535,7 @@
                     </p>
                     <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
                         <a href="index.php?action=login_nutri" class="btn btn-gradient-nutri btn-lg px-4 py-3 fs-6">
-                            <i class="fa-solid fa-rocket me-2"></i> Comenzar Ahora (Gratis)
+                            <i class="fa-solid fa-rocket me-2"></i> Comenzar Ahora
                         </a>
                         <a href="#showcase" class="btn btn-outline-secondary rounded-pill px-4 py-3 fw-semibold fs-6">
                             <i class="fa-solid fa-eye me-2"></i> Ver App de Pacientes

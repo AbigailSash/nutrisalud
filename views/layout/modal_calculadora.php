@@ -26,23 +26,25 @@
                             <div class="col-md-4">
                                 <label class="form-label text-muted fw-bold">Sexo</label>
                                 <select id="calc_sexo" class="form-select shadow-sm border-0 bg-light">
+                                    <option value="" selected disabled>Seleccionar...</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Femenino</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-muted fw-bold">Edad (años)</label>
-                                <input type="number" id="calc_edad" class="form-control shadow-sm border-0 bg-light" value="30">
+                                <input type="number" id="calc_edad" class="form-control shadow-sm border-0 bg-light" placeholder="Ej: 30">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-muted fw-bold">Peso (kg)</label>
-                                <input type="number" step="0.1" id="calc_peso" class="form-control shadow-sm border-0 bg-light" value="70">
+                                <input type="number" step="0.1" id="calc_peso" class="form-control shadow-sm border-0 bg-light" placeholder="Ej: 70">
                             </div>
                         </div>
                         <div class="row g-3 mt-2">
                             <div class="col-md-12">
                                 <label class="form-label text-muted fw-bold">Nivel de Actividad General (Factor)</label>
                                 <select id="calc_naf" class="form-select shadow-sm border-0 bg-light">
+                                    <option value="" selected disabled>Seleccionar nivel...</option>
                                     <option value="1.2">Sedentario / Leve (1.2)</option>
                                     <option value="1.55">Moderada (1.55)</option>
                                     <option value="1.725">Intensa (1.725)</option>
@@ -74,6 +76,7 @@
                             <div class="col-md-6">
                                 <label class="form-label text-muted fw-bold">Mineral</label>
                                 <select id="calc_mineral" class="form-select shadow-sm border-0 bg-light">
+                                    <option value="" selected disabled>Seleccionar mineral...</option>
                                     <option value="23">Sodio (Na) - x 23</option>
                                     <option value="39.1">Potasio (K) - x 39.1</option>
                                     <option value="31">Fósforo (P) - x 31</option>

@@ -214,7 +214,22 @@ CREATE TABLE IF NOT EXISTS `pago` (
   CONSTRAINT `chk_pago_estado` CHECK (`Estado_Pago` IN ('Aprobado','Rechazado','Pendiente'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 14. VISTA: vista_menu_paciente
+-- 14. TABLA: password_resets (Tokens seguros de recuperación de contraseña)
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `IdReset` INT(11) NOT NULL AUTO_INCREMENT,
+  `Email` VARCHAR(150) NOT NULL,
+  `Token` VARCHAR(64) NOT NULL,
+  `Tipo_Usuario` ENUM('nutricionista', 'paciente') NOT NULL,
+  `Expires_At` DATETIME NOT NULL,
+  `Used_At` DATETIME NULL DEFAULT NULL,
+  `Created_At` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`IdReset`),
+  UNIQUE KEY `uq_token` (`Token`),
+  KEY `idx_email_tipo` (`Email`, `Tipo_Usuario`),
+  KEY `idx_token_expires` (`Token`, `Expires_At`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 15. VISTA: vista_menu_paciente
 CREATE OR REPLACE VIEW `vista_menu_paciente` AS
 SELECT 
     dp.IdDetalle AS IdDetalle,
@@ -266,21 +281,7 @@ INSERT IGNORE INTO `alimento` (`IdAlimento`, `Nombre_Alimento`, `Calorias_100g`,
 (10, 'Nueces peladas', 654.00, 15.00, 14.00, 65.00);
 
 -- Usuario Administrador Principal (Email: admin@nutrisalud.com / Password: admin123)
--- Hash bcrypt para 'admin123'
 INSERT IGNORE INTO `nutricionista` (`IdNutri`, `DNI`, `Matricula`, `Nombre`, `Apellido`, `Email`, `Password_Hash`, `Rol`, `Telefono`, `Estado_Cuenta`, `Especialidad`, `Direccion`, `Biografia`) VALUES
--- 14. TABLA: password_resets (Tokens seguros de recuperación de contraseña)
-CREATE TABLE IF NOT EXISTS `password_resets` (
-  `IdReset` INT(11) NOT NULL AUTO_INCREMENT,
-  `Email` VARCHAR(150) NOT NULL,
-  `Token` VARCHAR(64) NOT NULL,
-  `Tipo_Usuario` ENUM('nutricionista', 'paciente') NOT NULL,
-  `Expires_At` DATETIME NOT NULL,
-  `Used_At` DATETIME NULL DEFAULT NULL,
-  `Created_At` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`IdReset`),
-  UNIQUE KEY `uq_token` (`Token`),
-  KEY `idx_email_tipo` (`Email`, `Tipo_Usuario`),
-  KEY `idx_token_expires` (`Token`, `Expires_At`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+(1, '00000000', 'MN-ADMIN-01', 'Administrador', 'NutriSalud', 'admin@nutrisalud.com', '$2y$10$K9aKUirpqzSlvEArPTM0fOTrCFVJVRoa.alhmDBG0wp3PwCIhm0OG', 'admin', '1100000000', 'A', 'Administrador de Plataforma', 'Sede Central NutriSalud', 'Cuenta maestra de administración del sistema NutriSalud SaaS');
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/config/Conexion.php';
-require_once __DIR__ . '/models/Paciente.php';
-require_once __DIR__ . '/models/Nutricionista.php';
-require_once __DIR__ . '/models/PlanAlimentario.php';
-require_once __DIR__ . '/models/Turno.php';
-require_once __DIR__ . '/controllers/PacienteController.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/Conexion.php';
+require_once __DIR__ . '/../models/Paciente.php';
+require_once __DIR__ . '/../models/Nutricionista.php';
+require_once __DIR__ . '/../models/PlanAlimentario.php';
+require_once __DIR__ . '/../models/Turno.php';
+require_once __DIR__ . '/../controllers/PacienteController.php';
 
 session_start();
 $_SESSION['IdPaciente'] = 1;

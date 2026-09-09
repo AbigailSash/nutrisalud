@@ -1,3 +1,4 @@
+# .htaccess - Configuración de Producción NutriSalud SaaS
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
@@ -6,11 +7,11 @@
     RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|::1)$
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-    # 2. Bloquear acceso a directorios sensibles
-    RewriteRule ^(logs|config|core|database)/ - [F,L]
+    # 2. Bloquear acceso directo a directorios internos y sensibles
+    RewriteRule ^(logs|config|core|database|models|services|views|scratch)/ - [F,L]
     
     # 3. Bloquear acceso a archivos sensibles por extensión
-    RewriteRule \.(log|ini|env|json|lock|md|sql|git|sh)$ - [F,L]
+    RewriteRule \.(log|ini|env|json|lock|md|sql|git|sh|ps1|bak)$ - [F,L]
 
     # 4. Redirigir al Front Controller (index.php)
     RewriteCond %{REQUEST_FILENAME} !-f
@@ -18,5 +19,13 @@
     RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
 </IfModule>
 
-# Evitar listado de directorios
+# 5. Cabeceras de Seguridad HTTP
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 6. Evitar listado de directorios
 Options -Indexes

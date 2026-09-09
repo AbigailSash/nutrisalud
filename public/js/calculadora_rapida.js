@@ -30,14 +30,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calcularTMB() {
-        let sexo = calcSexo.value;
+        let sexo = calcSexo ? calcSexo.value : '';
         let edad = parseFloat(calcEdad.value);
         let peso = parseFloat(calcPeso.value);
         let naf = parseFloat(calcNaf.value);
 
-        if (isNaN(edad) || isNaN(peso) || edad <= 0 || peso <= 0) {
+        if (!sexo || isNaN(edad) || isNaN(peso) || isNaN(naf) || edad <= 0 || peso <= 0 || naf <= 0) {
             resTmb.innerHTML = '-- <small class="fs-6">kcal</small>';
             resVct.innerHTML = '-- <small class="fs-6">kcal</small>';
+            if (resVct) resVct.removeAttribute('data-val');
             return;
         }
 
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let factor = parseFloat(calcMineral.value);
         let meq = parseFloat(calcMeq.value);
 
-        if (isNaN(meq)) {
+        if (isNaN(factor) || isNaN(meq) || factor <= 0 || meq <= 0) {
             resMg.innerHTML = '-- <small class="fs-5">mg</small>';
             return;
         }

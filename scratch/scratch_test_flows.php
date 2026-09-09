@@ -21,18 +21,18 @@ function assertTest($condition, $name) {
 }
 
 // 1. CARGA DE CONFIGURACIÓN Y BD
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/config/Conexion.php';
-require_once __DIR__ . '/models/Nutricionista.php';
-require_once __DIR__ . '/models/Paciente.php';
-require_once __DIR__ . '/models/PlanAlimentario.php';
-require_once __DIR__ . '/models/Turno.php';
-require_once __DIR__ . '/models/HistoriaClinica.php';
-require_once __DIR__ . '/models/InformeEducativo.php';
-require_once __DIR__ . '/models/DashboardModel.php';
-require_once __DIR__ . '/core/NutriCalculator.php';
-require_once __DIR__ . '/services/NutriCalculoService.php';
-require_once __DIR__ . '/services/NutriReglasClinicasService.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/Conexion.php';
+require_once __DIR__ . '/../models/Nutricionista.php';
+require_once __DIR__ . '/../models/Paciente.php';
+require_once __DIR__ . '/../models/PlanAlimentario.php';
+require_once __DIR__ . '/../models/Turno.php';
+require_once __DIR__ . '/../models/HistoriaClinica.php';
+require_once __DIR__ . '/../models/InformeEducativo.php';
+require_once __DIR__ . '/../models/DashboardModel.php';
+require_once __DIR__ . '/../core/NutriCalculator.php';
+require_once __DIR__ . '/../services/NutriCalculoService.php';
+require_once __DIR__ . '/../services/NutriReglasClinicasService.php';
 
 $pdo = Conexion::conectar();
 assertTest($pdo instanceof PDO, "Conexión a la base de datos vía PDO");
