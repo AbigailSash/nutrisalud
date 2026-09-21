@@ -142,17 +142,17 @@
 
                 <form action="index.php?action=procesar_login_nutri" method="POST">
                     <div class="mb-4">
-                        <label class="form-label">Identificador (DNI o Correo)</label>
+                        <label class="form-label">Identificador (Correo, DNI o Usuario)</label>
                         <div class="input-group">
                             <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-user"></i></span>
-                            <input type="text" name="identificador" class="form-control rounded-end-pill" placeholder="tu@email.com o DNI" required>
+                            <input type="text" name="identificador" class="form-control rounded-end-pill" placeholder="admin, tu@email.com o DNI" required>
                         </div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Contraseña</label>
                         <div class="input-group">
                             <span class="input-group-text rounded-start-pill"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="Tu contraseña (123456 por defecto)" required style="border-right: none;">
+                            <input type="password" name="password" class="form-control" placeholder="Tu contraseña" required style="border-right: none;">
                             <button type="button" class="btn btn-toggle-password rounded-end-pill input-group-text" aria-label="Mostrar contraseña" title="Mostrar u ocultar contraseña">
                                 <i class="fa-solid fa-eye"></i>
                             </button>

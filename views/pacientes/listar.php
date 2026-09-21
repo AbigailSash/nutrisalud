@@ -233,6 +233,9 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                                             <a href="index.php?action=ver_historia_clinica&id=<?= htmlspecialchars($p['IdPaciente'] ?? '') ?>" class="btn-action" title="Historia Clínica" style="background: rgba(13, 202, 240, 0.1); color: #0dcaf0;">
                                                 <i class="fa-solid fa-notes-medical"></i>
                                             </a>
+                                            <a href="index.php?action=formula_desarrollada&id_paciente=<?= htmlspecialchars($p['IdPaciente'] ?? '') ?>" class="btn-action" title="Fórmula Desarrollada & Balance" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
+                                                <i class="fa-solid fa-flask-vial"></i>
+                                            </a>
                                             <a href="index.php?action=imprimir_ficha_medica&id=<?= htmlspecialchars($p['IdPaciente'] ?? '') ?>" target="_blank" class="btn-action" title="Imprimir Ficha Médica" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;">
                                                 <i class="fa-solid fa-print"></i>
                                             </a>

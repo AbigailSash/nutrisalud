@@ -300,17 +300,31 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
                 </a>
             </li>
 
-            <div class="menu-category">Herramientas</div>
+            <li class="nav-item" data-tooltip="Fórmula Desarrollada">
+                <a class="nav-link <?= is_active(['formula_desarrollada', 'imprimir_formula'], $currentAction) ?>" href="index.php?action=formula_desarrollada">
+                    <div class="nav-link-content"><i class="fa-solid fa-flask-vial"></i> <span class="nav-link-text">Fórmula Desarrollada</span></div>
+                </a>
+            </li>
+
+            <li class="nav-item" data-tooltip="Riesgo CV (HEARTS Nativo)">
+                <a class="nav-link" href="javascript:void(0)" onclick="abrirCalculadoraRiesgoCV(event)">
+                    <div class="nav-link-content"><i class="fa-solid fa-heart-pulse text-danger"></i> <span class="nav-link-text">Riesgo CV (Nativo)</span></div>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle badge-menu" style="font-size: 0.65rem; padding: 2px 6px;">HEARTS</span>
+                </a>
+            </li>
+
+            <div class="menu-category">Herramientas & Referencias</div>
             
             <li class="nav-item" data-tooltip="Calculadora Rápida">
-                <a class="nav-link" href="javascript:void(0)" onclick="abrirCalculadoraRapida(event)" data-bs-toggle="modal" data-bs-target="#modalCalculadoraRapida">
+                <a class="nav-link" href="javascript:void(0)" onclick="abrirCalculadoraRapida(event)">
                     <div class="nav-link-content"><i class="fa-solid fa-calculator"></i> <span class="nav-link-text">Calculadora Rápida</span></div>
                 </a>
             </li>
 
-            <li class="nav-item" data-tooltip="Riesgo CV (OPS)">
+            <li class="nav-item" data-tooltip="Riesgo CV (Web Oficial OPS)">
                 <a class="nav-link" href="https://www.paho.org/cardioapp/web/#/cvrisk" target="_blank" rel="noopener">
-                    <div class="nav-link-content"><i class="fa-solid fa-heart-pulse"></i> <span class="nav-link-text">Riesgo CV (OPS)</span></div>
+                    <div class="nav-link-content"><i class="fa-solid fa-arrow-up-right-from-square text-info"></i> <span class="nav-link-text">Riesgo CV (Web OPS)</span></div>
+                    <span class="badge bg-light text-secondary border badge-menu" style="font-size: 0.65rem; padding: 2px 6px;">EXTERNO</span>
                 </a>
             </li>
 
@@ -381,9 +395,33 @@ $iniciales = strtoupper(substr($nombre, 0, 1) . substr($apellido, 0, 1));
         if (modalEl && typeof bootstrap !== 'undefined') {
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
+            setTimeout(() => {
+                const tabBtn = document.getElementById('tmb-tab');
+                if (tabBtn) {
+                    const tab = bootstrap.Tab.getOrCreateInstance(tabBtn);
+                    tab.show();
+                }
+            }, 100);
+        }
+    };
+
+    window.abrirCalculadoraRiesgoCV = function(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        const modalEl = document.getElementById('modalCalculadoraRapida');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            setTimeout(() => {
+                const tabBtn = document.getElementById('riesgocv-tab');
+                if (tabBtn) {
+                    const tab = bootstrap.Tab.getOrCreateInstance(tabBtn);
+                    tab.show();
+                }
+            }, 150);
         }
     };
 </script>
 
 <?php include 'views/layout/modal_calculadora.php'; ?>
+<script src="public/js/hearts_risk_calculator.js?v=<?= time() ?>"></script>
 <script src="public/js/calculadora_rapida.js?v=<?= time() ?>"></script>

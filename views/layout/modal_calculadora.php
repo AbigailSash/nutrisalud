@@ -1,6 +1,6 @@
 <!-- Modal Calculadora Rápida -->
 <div class="modal fade" id="modalCalculadoraRapida" tabindex="-1" aria-labelledby="modalCalculadoraRapidaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green));">
                 <h5 class="modal-title fw-bold" id="modalCalculadoraRapidaLabel"><i class="fa-solid fa-calculator me-2"></i> Suite Clínica Rápida</h5>
@@ -16,6 +16,9 @@
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link fw-bold" id="catabolismo-tab" data-bs-toggle="tab" data-bs-target="#catabolismo-pane" type="button" role="tab" style="color: var(--dark-green);">Catabolismo (NUU)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="riesgocv-tab" data-bs-toggle="tab" data-bs-target="#riesgocv-pane" type="button" role="tab" style="color: #dc2626;"><i class="fa-solid fa-heart-pulse text-danger me-1"></i> Riesgo CV (HEARTS)</button>
                     </li>
                 </ul>
                 <div class="tab-content p-4" id="calcTabsContent">
@@ -130,6 +133,140 @@
                         </div>
                         <div class="mt-3 text-end d-none" id="btn_exportar_nuu_container">
                             <button class="btn btn-sm btn-outline-primary btn-exportar" data-target="nuu">Exportar NUU a Consulta</button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: Riesgo Cardiovascular (HEARTS / OMS) -->
+                    <div class="tab-pane fade" id="riesgocv-pane" role="tabpanel">
+                        <div class="alert alert-light border d-flex align-items-center py-2 px-3 mb-3 small">
+                            <i class="fa-solid fa-heart-pulse text-danger fs-4 me-3"></i>
+                            <div>
+                                <strong>Calculadora Oficial OPS / HEARTS en las Américas / OMS 2019</strong><br>
+                                <span class="text-muted">Estimación del riesgo de sufrir un infarto o ACV a 10 años (Matriz AMR B / Cono Sur).</span>
+                            </div>
+                        </div>
+
+                        <!-- Filtros de Alto Riesgo Preexistente -->
+                        <div class="bg-light p-3 rounded mb-3 border">
+                            <span class="fw-bold text-dark small d-block mb-2"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Condiciones de Alto Riesgo Preexistente</span>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="modal_cv_ecv">
+                                        <label class="form-check-label small" for="modal_cv_ecv">Antecedente de ECV (Infarto / ACV)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="modal_cv_erc">
+                                        <label class="form-check-label small" for="modal_cv_erc">Enfermedad Renal Crónica (ERC)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parámetros de la Evaluación -->
+                        <div id="modal_cv_campos_grid" class="row g-2">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted fw-bold small mb-1">Sexo</label>
+                                <select id="modal_cv_sexo" class="form-select form-select-sm bg-light">
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted fw-bold small mb-1">Edad (años)</label>
+                                <input type="number" id="modal_cv_edad" class="form-control form-control-sm bg-light" value="50" min="18" max="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted fw-bold small mb-1">Diabetes</label>
+                                <select id="modal_cv_diabetes" class="form-select form-select-sm bg-light">
+                                    <option value="0">No Diabético</option>
+                                    <option value="1">Diabético</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted fw-bold small mb-1">Tabaquismo</label>
+                                <select id="modal_cv_tabaco" class="form-select form-select-sm bg-light">
+                                    <option value="0">No Fumador</option>
+                                    <option value="1">Fumador Actual</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mt-2">
+                                <label class="form-label text-muted fw-bold small mb-1">Presión Sistólica (PAS mmHg)</label>
+                                <input type="number" id="modal_cv_pas" class="form-control form-control-sm bg-light" value="130" min="70" max="250">
+                            </div>
+                            <div class="col-md-4 mt-2">
+                                <label class="form-label text-muted fw-bold small mb-1">Vía de Evaluación</label>
+                                <select id="modal_cv_via" class="form-select form-select-sm bg-light">
+                                    <option value="imc">Sin Colesterol (IMC)</option>
+                                    <option value="colesterol">Con Colesterol Total</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mt-2" id="modal_cv_grupo_col" style="display: none;">
+                                <label class="form-label text-muted fw-bold small mb-1">Colesterol Total (mg/dL)</label>
+                                <input type="number" id="modal_cv_col" class="form-control form-control-sm bg-light" placeholder="Ej: 200" value="200">
+                            </div>
+                            <div class="col-md-4 mt-2" id="modal_cv_grupo_imc">
+                                <label class="form-label text-muted fw-bold small mb-1">IMC (kg/m²)</label>
+                                <input type="number" step="0.1" id="modal_cv_imc" class="form-control form-control-sm bg-light" placeholder="Ej: 26.5" value="25.0">
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Resultados del Riesgo -->
+                        <div class="card mt-3 border shadow-sm">
+                            <div class="card-body p-3 text-center">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1" style="letter-spacing: 0.5px;">Riesgo Cardiovascular a 10 Años</small>
+                                <div class="d-flex justify-content-center align-items-center gap-3">
+                                    <h2 class="mb-0 fw-bold" id="modal_res_cv_pct">--</h2>
+                                    <span class="badge fs-6 py-2 px-3" id="modal_res_cv_badge" style="background-color: #10b981;">Bajo (&lt;5%)</span>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2" id="modal_res_cv_motivo">Estratificación oficial OMS 2019 AMR B (Cono Sur).</p>
+                                
+                                <div class="progress mt-2" style="height: 8px;">
+                                    <div id="modal_res_cv_bar" class="progress-bar" role="progressbar" style="width: 15%; background-color: #10b981;"></div>
+                                </div>
+
+                                <div class="row g-2 mt-2 pt-2 border-top text-start small">
+                                    <div class="col-4"><strong>Meta PAS:</strong> <span id="modal_res_cv_metapas">&lt; 140/90 mmHg</span></div>
+                                    <div class="col-4"><strong>Meta LDL:</strong> <span id="modal_res_cv_metaldl">&lt; 116 mg/dL</span></div>
+                                    <div class="col-4"><strong>Seguimiento:</strong> <span id="modal_res_cv_seg">Cada 3-5 años</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simulador Interactivo What-if -->
+                        <div class="card mt-2 border border-info bg-light">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-primary small"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Simulador "¿Qué pasaría si...?"</span>
+                                    <span class="badge bg-primary small" id="modal_cv_delta_badge">Δ 0.0 pts</span>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-4">
+                                        <label class="text-muted">Tabaquismo:</label>
+                                        <select id="modal_sim_tabaco" class="form-select form-select-sm">
+                                            <option value="0">No Fumador</option>
+                                            <option value="1">Fumador</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="text-muted">Meta PAS:</label>
+                                        <input type="number" id="modal_sim_pas" class="form-control form-control-sm" value="120">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="text-muted">Meta IMC:</label>
+                                        <input type="number" step="0.1" id="modal_sim_imc" class="form-control form-control-sm" value="23.5">
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-dark small" id="modal_sim_mensaje" style="font-size: 0.8rem;">
+                                    Modifica los parámetros para visualizar el impacto motivacional del tratamiento nutricional.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-end d-none" id="btn_exportar_cv_container">
+                            <button class="btn btn-sm btn-outline-danger btn-exportar" data-target="riesgo_cv"><i class="fa-solid fa-file-export me-1"></i> Exportar Riesgo CV a Consulta</button>
                         </div>
                     </div>
 

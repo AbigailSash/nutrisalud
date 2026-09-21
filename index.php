@@ -213,6 +213,37 @@ switch ($action) {
         $controller->eliminar_turno();
         break;
 
+    // -- APIS CALENDARIO FULLCALENDAR V6 Y AGENDA CLÍNICA --
+    case 'api_eventos_calendario':
+        AuthController::verificarSesion();
+        $controller = new TurnoController();
+        $controller->api_eventos_calendario();
+        break;
+
+    case 'api_guardar_turno_calendario':
+        AuthController::verificarSesion();
+        $controller = new TurnoController();
+        $controller->api_guardar_turno_calendario();
+        break;
+
+    case 'api_reprogramar_turno':
+        AuthController::verificarSesion();
+        $controller = new TurnoController();
+        $controller->api_reprogramar_turno();
+        break;
+
+    case 'api_cambiar_estado_turno':
+        AuthController::verificarSesion();
+        $controller = new TurnoController();
+        $controller->api_cambiar_estado_turno();
+        break;
+
+    case 'api_detalle_turno':
+        AuthController::verificarSesion();
+        $controller = new TurnoController();
+        $controller->api_detalle_turno();
+        break;
+
     // -- INFORMES EDUCATIVOS --
     case 'listar_informes':
         AuthController::verificarSesion();
@@ -310,6 +341,70 @@ switch ($action) {
         AuthController::verificarSesion();
         $controller = new PlanAlimentarioController();
         $controller->api_buscar_alimento();
+        break;
+
+    // -- FÓRMULA DESARROLLADA Y BALANCE NUTRICIONAL --
+    case 'formula_desarrollada':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->index();
+        break;
+
+    case 'imprimir_formula':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->imprimir();
+        break;
+
+    case 'api_alimentos_composicion':
+    case 'api_buscar_sara2':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->api_buscar_sara2();
+        break;
+
+    case 'api_guardar_formula':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->api_guardar();
+        break;
+
+    case 'api_obtener_formula':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->api_obtener_formula();
+        break;
+
+    case 'api_historial_formulas':
+        AuthController::verificarSesion();
+        require_once 'controllers/FormulaDesarrolladaController.php';
+        $controller = new FormulaDesarrolladaController();
+        $controller->api_listar_historial();
+        break;
+
+    // -- EVALUACIÓN DE RIESGO CARDIOVASCULAR (HEARTS / OMS) --
+    case 'api_guardar_evaluacion_cv':
+        AuthController::verificarSesion();
+        $controller = new PacienteController();
+        $controller->api_guardar_evaluacion_cv();
+        break;
+
+    case 'api_historial_evaluaciones_cv':
+        AuthController::verificarSesion();
+        $controller = new PacienteController();
+        $controller->api_historial_evaluaciones_cv();
+        break;
+
+    case 'api_calcular_riesgo_cv':
+        AuthController::verificarSesion();
+        require_once 'controllers/HeartsController.php';
+        $controller = new HeartsController();
+        $controller->api_calcular();
         break;
 
     // ==========================================

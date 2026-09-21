@@ -1,0 +1,21 @@
+# Logs y archivos de depuración
+logs/*.log
+!logs/.htaccess
+
+# Archivos de pruebas y scripts temporales de desarrollo
+scratch/
+
+# Variables de entorno y configuraciones locales
+.env
+*.local
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini

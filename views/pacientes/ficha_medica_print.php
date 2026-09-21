@@ -250,7 +250,58 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             </div>
         </div>
 
-        <!-- 6. Observaciones Generales -->
+        <!-- 6. Riesgo Cardiovascular (HEARTS / OMS) -->
+        <?php if (!empty($ultimaEvaluacionCV)): 
+            $badgeColorCV = '#10b981';
+            if ($ultimaEvaluacionCV['categoria_riesgo'] === 'Moderado') $badgeColorCV = '#eab308';
+            elseif ($ultimaEvaluacionCV['categoria_riesgo'] === 'Alto') $badgeColorCV = '#f97316';
+            elseif ($ultimaEvaluacionCV['categoria_riesgo'] === 'Muy Alto') $badgeColorCV = '#ef4444';
+            elseif ($ultimaEvaluacionCV['categoria_riesgo'] === 'Critico') $badgeColorCV = '#881337';
+        ?>
+        <div class="section-title">Estratificación de Riesgo Cardiovascular a 10 Años (HEARTS / OMS)</div>
+        <div class="grid-3" style="background: #fdfefe; border: 1px solid #e2e8f0; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+            <div class="field">
+                <span class="label">Riesgo a 10 Años</span>
+                <span class="value" style="font-size: 16px; font-weight: bold; color: <?= $badgeColorCV ?>;">
+                    <?= htmlspecialchars($ultimaEvaluacionCV['porcentaje_riesgo']) ?>
+                </span>
+            </div>
+            <div class="field">
+                <span class="label">Estrato Diagnóstico</span>
+                <span class="value" style="font-weight: bold; color: <?= $badgeColorCV ?>;">
+                    <?= htmlspecialchars($ultimaEvaluacionCV['categoria_riesgo']) ?>
+                </span>
+            </div>
+            <div class="field">
+                <span class="label">Fecha Evaluación</span>
+                <span class="value"><?= date('d/m/Y H:i', strtotime($ultimaEvaluacionCV['fecha_evaluacion'])) ?></span>
+            </div>
+            <div class="field">
+                <span class="label">Presión Sistólica</span>
+                <span class="value"><?= $ultimaEvaluacionCV['presion_sistolica'] ?> mmHg</span>
+            </div>
+            <div class="field">
+                <span class="label">Tabaquismo / Diabetes</span>
+                <span class="value">
+                    <?= !empty($ultimaEvaluacionCV['tabaquismo']) ? 'Fumador' : 'No fuma' ?> / <?= !empty($ultimaEvaluacionCV['diabetes']) ? 'Diabético' : 'No diabético' ?>
+                </span>
+            </div>
+            <div class="field">
+                <span class="label">Evaluación Vía</span>
+                <span class="value">
+                    <?= !empty($ultimaEvaluacionCV['con_colesterol']) ? ('Colesterol Total: ' . $ultimaEvaluacionCV['colesterol_total'] . ' mg/dL') : ('IMC: ' . $ultimaEvaluacionCV['imc'] . ' kg/m²') ?>
+                </span>
+            </div>
+        </div>
+        <?php if (!empty($ultimaEvaluacionCV['recomendacion_terapeutica'])): ?>
+        <div class="field">
+            <span class="label">Pautas Terapéuticas HEARTS / OPS</span>
+            <div class="text-block" style="font-size: 12.5px; line-height: 1.4;"><?= nl2br(htmlspecialchars($ultimaEvaluacionCV['recomendacion_terapeutica'])) ?></div>
+        </div>
+        <?php endif; ?>
+        <?php endif; ?>
+
+        <!-- 7. Observaciones Generales -->
         <div class="section-title">Observaciones Clínicas (Seguimiento)</div>
         <div class="text-block"><?= getValPrint($datosHistoria, 'seg_observaciones') ?></div>
 

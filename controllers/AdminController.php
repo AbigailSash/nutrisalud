@@ -13,9 +13,20 @@ class AdminController {
         }
         
         if (!isset($_SESSION['user_rol']) || $_SESSION['user_rol'] !== 'admin') {
-            header('HTTP/1.1 403 Forbidden');
-            echo json_encode(['success' => false, 'message' => 'Acceso denegado. Se requiere rol de administrador.']);
-            exit();
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                      || (isset($_GET['action']) && strpos($_GET['action'], 'api_') === 0);
+            
+            if ($isAjax) {
+                header('HTTP/1.1 403 Forbidden');
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Acceso denegado. Se requiere rol de administrador.']);
+                exit();
+            } else {
+                $_SESSION['mensaje'] = "Debes iniciar sesión con una cuenta de administrador para acceder a este módulo.";
+                $_SESSION['tipo_mensaje'] = "warning";
+                header("Location: index.php?action=login_nutri");
+                exit();
+            }
         }
 
         $this->model = new Nutricionista();

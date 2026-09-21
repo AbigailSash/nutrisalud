@@ -10,20 +10,47 @@ class Nutricionista {
     }
 
     public function autenticar($identificador, $password) {
-        if (is_numeric($identificador)) {
+        $identificador = trim($identificador);
+        if (empty($identificador) || empty($password)) {
+            return false;
+        }
+
+        // Si el identificador es 'admin', buscar directamente la cuenta administradora
+        if (strtolower($identificador) === 'admin') {
             $sql = "SELECT * FROM nutricionista 
-                    WHERE DNI = :identificador AND Estado_Cuenta = 'A'";
+                    WHERE (Email = 'admin@nutrisalud.com' OR Rol = 'admin') 
+                      AND Estado_Cuenta = 'A' LIMIT 1";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+        } elseif (is_numeric($identificador)) {
+            $sql = "SELECT * FROM nutricionista 
+                    WHERE (DNI = :identificador OR Matricula = :identificador2) 
+                      AND Estado_Cuenta = 'A' LIMIT 1";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':identificador', $identificador, PDO::PARAM_STR);
+            $stmt->bindParam(':identificador2', $identificador, PDO::PARAM_STR);
+            $stmt->execute();
         } else {
             $sql = "SELECT * FROM nutricionista 
-                    WHERE Email = :identificador AND Estado_Cuenta = 'A'";
+                    WHERE (Email = :identificador OR Matricula = :identificador2) 
+                      AND Estado_Cuenta = 'A' LIMIT 1";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':identificador', $identificador, PDO::PARAM_STR);
+            $stmt->bindParam(':identificador2', $identificador, PDO::PARAM_STR);
+            $stmt->execute();
         }
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':identificador', $identificador, PDO::PARAM_STR);
-        $stmt->execute();
         
         $nutri = $stmt->fetch();
-        if ($nutri && !empty($nutri['Password_Hash']) && password_verify($password, $nutri['Password_Hash'])) {
-            return $nutri;
+        if ($nutri && !empty($nutri['Password_Hash'])) {
+            if (password_verify($password, $nutri['Password_Hash'])) {
+                return $nutri;
+            }
+            // Compatibilidad para admin con admin123 si el hash en BD fue importado
+            if ($nutri['Rol'] === 'admin' && ($password === 'admin123' || $password === '123456')) {
+                if (password_verify('admin123', $nutri['Password_Hash']) || password_verify('123456', $nutri['Password_Hash'])) {
+                    return $nutri;
+                }
+            }
         }
         return false;
     }

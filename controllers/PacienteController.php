@@ -266,6 +266,12 @@ class PacienteController {
                 $historia = $historiaModel->obtenerPorPaciente($idPaciente, $idNutri);
                 $datosHistoria = $historia ? json_decode($historia['Datos_JSON'], true) : [];
                 $camposCustom = $historiaModel->obtenerCamposCustom($idPaciente);
+
+                require_once 'models/EvaluacionRiesgoCV.php';
+                $riesgoModel = new EvaluacionRiesgoCV();
+                $evaluacionesCV = $riesgoModel->listarPorPaciente($idPaciente, $idNutri);
+                $ultimaEvaluacionCV = $riesgoModel->obtenerUltimaPorPaciente($idPaciente, $idNutri);
+
                 require_once 'views/pacientes/historia_clinica.php';
                 return;
             }
@@ -334,10 +340,109 @@ class PacienteController {
             $historia = $historiaModel->obtenerPorPaciente($idPaciente, $idNutri);
             $datosHistoria = $historia ? json_decode($historia['Datos_JSON'], true) : [];
 
+            require_once 'models/EvaluacionRiesgoCV.php';
+            $riesgoModel = new EvaluacionRiesgoCV();
+            $ultimaEvaluacionCV = $riesgoModel->obtenerUltimaPorPaciente($idPaciente, $idNutri);
+
             require 'views/pacientes/ficha_medica_print.php';
         } else {
             echo "<h3 style='font-family:sans-serif; text-align:center; margin-top:50px;'>Acceso denegado. Debes iniciar sesión.</h3>";
         }
+    }
+
+    /**
+     * API JSON: Guardar Evaluación de Riesgo Cardiovascular (HEARTS / OMS)
+     */
+    public function api_guardar_evaluacion_cv() {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $idNutri = $_SESSION['IdNutri'] ?? 0;
+        if (!$idNutri) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no válida']);
+            exit();
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            $input = $_POST;
+        }
+
+        $idPaciente = (int)($input['id_paciente'] ?? 0);
+        if ($idPaciente <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de paciente requerido']);
+            exit();
+        }
+
+        require_once 'core/HeartsRiskCalculator.php';
+        require_once 'models/EvaluacionRiesgoCV.php';
+
+        // Calcular en backend para validación clínica
+        $calculo = HeartsRiskCalculator::calcular($input);
+
+        $datosGuardar = [
+            'id_paciente'               => $idPaciente,
+            'id_nutri'                  => $idNutri,
+            'antecedente_ecv'           => !empty($input['antecedente_ecv']) ? 1 : 0,
+            'antecedente_erc'           => !empty($input['antecedente_erc']) ? 1 : 0,
+            'diabetes'                  => !empty($input['diabetes']) ? 1 : 0,
+            'tabaquismo'                => !empty($input['tabaquismo']) ? 1 : 0,
+            'edad'                      => (int)($input['edad'] ?? 50),
+            'sexo'                      => strtoupper($input['sexo'] ?? 'M') === 'F' ? 'F' : 'M',
+            'presion_sistolica'         => (int)($input['presion_sistolica'] ?? 120),
+            'con_colesterol'            => !empty($input['con_colesterol']) ? 1 : 0,
+            'colesterol_total'          => isset($input['colesterol_total']) && $input['colesterol_total'] !== '' ? (float)$input['colesterol_total'] : null,
+            'peso'                      => isset($input['peso']) && $input['peso'] !== '' ? (float)$input['peso'] : null,
+            'altura'                    => isset($input['altura']) && $input['altura'] !== '' ? (float)$input['altura'] : null,
+            'imc'                       => isset($input['imc']) && $input['imc'] !== '' ? (float)$input['imc'] : null,
+            'porcentaje_riesgo'         => $calculo['porcentaje_riesgo'],
+            'categoria_riesgo'          => $calculo['categoria_riesgo'],
+            'recomendacion_terapeutica' => $calculo['texto_recomendaciones']
+        ];
+
+        $riesgoModel = new EvaluacionRiesgoCV();
+        $idInsertado = $riesgoModel->guardar($datosGuardar);
+
+        if ($idInsertado) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Evaluación de Riesgo Cardiovascular guardada exitosamente.',
+                'evaluacion_id' => $idInsertado,
+                'calculo' => $calculo
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al guardar la evaluación o paciente no autorizado.'
+            ]);
+        }
+        exit();
+    }
+
+    /**
+     * API JSON: Listar Historial de Evaluaciones de Riesgo CV de un Paciente
+     */
+    public function api_historial_evaluaciones_cv() {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $idNutri = $_SESSION['IdNutri'] ?? 0;
+        $idPaciente = (int)($_GET['id_paciente'] ?? 0);
+
+        if (!$idNutri || !$idPaciente) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros insuficientes']);
+            exit();
+        }
+
+        require_once 'models/EvaluacionRiesgoCV.php';
+        $riesgoModel = new EvaluacionRiesgoCV();
+        $historial = $riesgoModel->listarPorPaciente($idPaciente, $idNutri);
+
+        echo json_encode([
+            'success' => true,
+            'data' => $historial
+        ]);
+        exit();
     }
 }
 ?>

@@ -14,9 +14,9 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
         :root {
             --primary-green: <?= htmlspecialchars($colorTema) ?>;
             --dark-green: color-mix(in srgb, var(--primary-green) 75%, black);
-            --light-green: color-mix(in srgb, var(--primary-green) 15%, white);
-            --text-dark: #2c3e50;
-            --bg-light: #f4f7f6;
+            --light-green: color-mix(in srgb, var(--primary-green) 12%, white);
+            --text-dark: #1e293b;
+            --bg-light: #f8fafc;
             --sidebar-bg: #1a252f;
         }
 
@@ -27,54 +27,6 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling */
-        .sidebar {
-            height: 100vh;
-            width: 280px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: var(--sidebar-bg);
-            padding-top: 2rem;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .sidebar-brand {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .sidebar-brand i { color: var(--primary-green); margin-right: 10px; }
-
-        .nav-sidebar .nav-link {
-            color: #b8c7ce;
-            padding: 12px 25px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 5px;
-            border-left: 4px solid transparent;
-        }
-
-        .nav-sidebar .nav-link:hover, .nav-sidebar .nav-link.active {
-            color: white;
-            background-color: rgba(255,255,255,0.05);
-            border-left-color: var(--primary-green);
-        }
-
-        .nav-sidebar .nav-link i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 2rem 3rem;
@@ -83,16 +35,16 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 
         .page-title {
             font-weight: 700;
-            font-size: 2rem;
-            margin-bottom: 2rem;
+            font-size: 1.85rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-card {
             background: white;
             border-radius: 20px;
-            padding: 2rem;
+            padding: 2.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            max-width: 600px;
+            max-width: 650px;
         }
 
         .btn-gradient {
@@ -103,8 +55,7 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
             padding: 12px 25px;
             border-radius: 50px;
             transition: all 0.3s;
-            width: 100%;
-            margin-top: 1rem;
+            box-shadow: 0 4px 14px rgba(46, 204, 113, 0.25);
         }
         
         .btn-gradient:hover {
@@ -114,7 +65,6 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
         }
 
         @media (max-width: 991px) {
-            .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
@@ -126,7 +76,18 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
 
     <!-- Main Content -->
     <div class="main-content">
-        <h1 class="page-title"><?= $turno ? 'Editar Turno' : 'Agendar Nuevo Turno' ?></h1>
+        <!-- Header -->
+        <?php include 'views/layout/header.php'; ?>
+
+        <div class="d-flex align-items-center mb-4">
+            <a href="index.php?action=listar_turnos" class="btn btn-light rounded-circle me-3 border" style="width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="page-title mb-0"><?= $turno ? 'Editar Turno' : 'Agendar Nuevo Turno' ?></h1>
+                <p class="text-muted small mb-0">Configuración completa de la consulta médica.</p>
+            </div>
+        </div>
 
         <div class="form-card">
             <form action="index.php?action=<?= $turno ? 'actualizar_turno' : 'guardar_turno' ?>" method="POST">
@@ -136,12 +97,12 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                 <?php endif; ?>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Paciente</label>
-                    <select name="id_paciente" class="form-select" required <?= $turno ? 'disabled' : '' ?>>
+                    <label class="form-label fw-bold small text-muted text-uppercase">Paciente *</label>
+                    <select name="id_paciente" class="form-select rounded-3 py-2" required <?= $turno ? 'disabled' : '' ?>>
                         <option value="">Selecciona un paciente...</option>
                         <?php foreach($pacientes as $p): ?>
                             <option value="<?= $p['IdPaciente'] ?>" <?= ($turno && $turno['IdPaciente'] == $p['IdPaciente']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($p['Nombre'] . ' ' . $p['Apellido']) ?>
+                                <?= htmlspecialchars($p['Apellido'] . ', ' . $p['Nombre']) ?> (DNI: <?= htmlspecialchars($p['DNI']) ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -150,36 +111,77 @@ $colorTema = $_SESSION['ColorTema'] ?? '#2ecc71';
                     <?php endif; ?>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Fecha</label>
-                        <input type="date" name="fecha" class="form-control" value="<?= $turno ? $turno['Fecha'] : '' ?>" required>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Fecha *</label>
+                        <input type="date" name="fecha" class="form-control rounded-3 py-2" value="<?= $turno ? $turno['Fecha'] : date('Y-m-d') ?>" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Hora</label>
-                        <input type="time" name="hora" class="form-control" value="<?= $turno ? $turno['Hora'] : '' ?>" required>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Hora *</label>
+                        <input type="time" name="hora" class="form-control rounded-3 py-2" value="<?= $turno ? substr($turno['Hora'], 0, 5) : '09:00' ?>" required>
                     </div>
                 </div>
 
-                <?php if ($turno): ?>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Modalidad *</label>
+                        <select name="modalidad" id="form_modalidad" class="form-select rounded-3 py-2" onchange="toggleFormModalidad(this.value)">
+                            <option value="Presencial" <?= (!$turno || ($turno['Modalidad'] ?? '') === 'Presencial') ? 'selected' : '' ?>>🏢 Presencial</option>
+                            <option value="Online" <?= ($turno && ($turno['Modalidad'] ?? '') === 'Online') ? 'selected' : '' ?>>💻 Online (Videollamada)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Estado *</label>
+                        <select name="estado" class="form-select rounded-3 py-2" required>
+                            <option value="Confirmado" <?= ($turno && $turno['Estado_Turno'] === 'Confirmado') ? 'selected' : '' ?>>✅ Confirmado</option>
+                            <option value="Pendiente" <?= (!$turno || $turno['Estado_Turno'] === 'Pendiente') ? 'selected' : '' ?>>⏳ Pendiente</option>
+                            <option value="Atendido" <?= ($turno && $turno['Estado_Turno'] === 'Atendido') ? 'selected' : '' ?>>📋 Atendido</option>
+                            <option value="Cancelado" <?= ($turno && $turno['Estado_Turno'] === 'Cancelado') ? 'selected' : '' ?>>❌ Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Motivo de Consulta</label>
+                    <input type="text" name="motivo_consulta" class="form-control rounded-3 py-2" value="<?= htmlspecialchars($turno['Motivo_Consulta'] ?? 'Consulta Nutricional') ?>">
+                </div>
+
+                <div class="mb-3 <?= ($turno && ($turno['Modalidad'] ?? '') === 'Online') ? '' : 'd-none' ?>" id="form_div_link">
+                    <label class="form-label fw-bold small text-muted text-uppercase"><i class="fa-solid fa-video me-1 text-primary"></i> Enlace de Videollamada (Meet / Zoom)</label>
+                    <input type="url" name="link_reunion" class="form-control rounded-3 py-2" value="<?= htmlspecialchars($turno['Link_Reunion'] ?? '') ?>" placeholder="https://meet.google.com/...">
+                </div>
+
+                <div class="mb-3 <?= ($turno && ($turno['Modalidad'] ?? '') === 'Online') ? 'd-none' : '' ?>" id="form_div_direccion">
+                    <label class="form-label fw-bold small text-muted text-uppercase"><i class="fa-solid fa-location-dot me-1 text-danger"></i> Consultorio / Dirección</label>
+                    <input type="text" name="direccion" class="form-control rounded-3 py-2" value="<?= htmlspecialchars($turno['Direccion'] ?? 'Consultorio') ?>">
+                </div>
+
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Estado</label>
-                    <select name="estado" class="form-select" required>
-                        <option value="Pendiente" <?= $turno['Estado_Turno'] == 'Pendiente' ? 'selected' : '' ?>>Pendiente</option>
-                        <option value="Confirmado" <?= $turno['Estado_Turno'] == 'Confirmado' ? 'selected' : '' ?>>Confirmado</option>
-                        <option value="Cancelado" <?= $turno['Estado_Turno'] == 'Cancelado' ? 'selected' : '' ?>>Cancelado</option>
-                    </select>
+                    <label class="form-label fw-bold small text-muted text-uppercase">Notas / Indicaciones</label>
+                    <textarea name="notas" class="form-control rounded-3" rows="2"><?= htmlspecialchars($turno['Notas'] ?? '') ?></textarea>
                 </div>
-                <?php endif; ?>
 
-                <div class="d-flex gap-2">
-                    <a href="index.php?action=listar_turnos" class="btn btn-light w-50 py-2 fw-bold text-muted mt-3">Cancelar</a>
-                    <button type="submit" class="btn-gradient w-50"><?= $turno ? 'Guardar Cambios' : 'Agendar Turno' ?></button>
+                <div class="d-flex gap-3">
+                    <a href="index.php?action=listar_turnos" class="btn btn-light w-50 py-2 fw-semibold text-muted rounded-pill">Cancelar</a>
+                    <button type="submit" class="btn btn-gradient w-50"><?= $turno ? 'Guardar Cambios' : 'Agendar Turno' ?></button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script>
+        function toggleFormModalidad(val) {
+            const divLink = document.getElementById('form_div_link');
+            const divDir = document.getElementById('form_div_direccion');
+            if (val === 'Online') {
+                divLink.classList.remove('d-none');
+                divDir.classList.add('d-none');
+            } else {
+                divLink.classList.add('d-none');
+                divDir.classList.remove('d-none');
+            }
+        }
+    </script>
     <?php include 'views/layout/global_scripts.php'; ?>
 </body>
 </html>

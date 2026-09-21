@@ -119,14 +119,19 @@ class Paciente {
     }
 
     public function autenticar($dni, $email_or_password) {
-        // Buscamos al paciente por DNI
-        $sql = "SELECT * FROM paciente WHERE DNI = :dni LIMIT 1";
+        // Buscamos todos los registros asociados al DNI ordenando por turnos activos e id reciente
+        $sql = "SELECT p.*, 
+                (SELECT COUNT(*) FROM turno t WHERE t.IdPaciente = p.IdPaciente AND t.Fecha >= CURDATE() AND t.Estado_Turno != 'Cancelado') AS tiene_turnos_proximos,
+                (SELECT MAX(t.IdTurno) FROM turno t WHERE t.IdPaciente = p.IdPaciente) AS ultimo_turno_id
+                FROM paciente p 
+                WHERE p.DNI = :dni 
+                ORDER BY tiene_turnos_proximos DESC, ultimo_turno_id DESC, p.IdPaciente DESC";
         $stmt = $this->conexion->prepare($sql);
         $stmt->bindParam(':dni', $dni, PDO::PARAM_STR);
         $stmt->execute();
-        $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
+        $candidatos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($paciente) {
+        foreach ($candidatos as $paciente) {
             $esValido = false;
             // 1. Verificar si lo ingresado coincide con el hash de la contraseña (por defecto es su DNI)
             if (!empty($paciente['Password']) && password_verify($email_or_password, $paciente['Password'])) {

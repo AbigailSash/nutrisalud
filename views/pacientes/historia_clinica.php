@@ -1,6 +1,6 @@
 <?php 
 // views/pacientes/historia_clinica.php
-// Expected variables: $paciente (array), $datosHistoria (array)
+// Expected variables: $paciente (array), $datosHistoria (array), $evaluacionesCV (array), $ultimaEvaluacionCV (array|null)
 
 function getVal($datosHistoria, $key, $default = '') {
     return isset($datosHistoria[$key]) ? htmlspecialchars($datosHistoria[$key]) : $default;
@@ -24,6 +24,29 @@ function renderCustomFields($seccion, $camposCustom) {
     $html .= '</div>';
     return $html;
 }
+
+// Cálculo de datos para autocompletado de Riesgo CV
+$edadPacienteCalc = 50;
+if (!empty($paciente['Fecha_Nacimiento'])) {
+    $fn = new DateTime($paciente['Fecha_Nacimiento']);
+    $edadPacienteCalc = (new DateTime())->diff($fn)->y;
+}
+
+$pasAuto = 120;
+$presionRaw = getVal($datosHistoria, 'presion_arterial');
+if (preg_match('/^(\d+)/', $presionRaw, $mPas)) {
+    $pasAuto = (int)$mPas[1];
+}
+
+$colAuto = getVal($datosHistoria, 'bio_col_total');
+$pesoAuto = getVal($datosHistoria, 'peso_actual', $paciente['Peso'] ?? '');
+$tallaAuto = getVal($datosHistoria, 'talla', !empty($paciente['Estatura']) ? ($paciente['Estatura'] / 100) : '');
+
+$imcAuto = '';
+if (!empty($pesoAuto) && !empty($tallaAuto) && (float)$tallaAuto > 0) {
+    $tVal = (float)$tallaAuto > 3 ? ((float)$tallaAuto / 100) : (float)$tallaAuto;
+    $imcAuto = round((float)$pesoAuto / ($tVal * $tVal), 1);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -33,6 +56,7 @@ function renderCustomFields($seccion, $camposCustom) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #2c3e50; }
         .wrapper { display: flex; width: 100%; align-items: stretch; }
@@ -70,7 +94,7 @@ function renderCustomFields($seccion, $camposCustom) {
                 </div>
                 <?php unset($_SESSION['mensaje']); unset($_SESSION['tipo_mensaje']); endif; ?>
 
-            <form action="index.php?action=guardar_historia_clinica" method="POST">
+            <form action="index.php?action=guardar_historia_clinica" method="POST" id="formHistoriaClinica">
                 <input type="hidden" name="id_paciente" value="<?= $paciente['IdPaciente'] ?>">
 
                 <!-- Navegación por Pestañas -->
@@ -80,6 +104,7 @@ function renderCustomFields($seccion, $camposCustom) {
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-antropo" type="button">Antropometría & Lab</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-habitos" type="button">Hábitos y 24hs</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-frecuencia" type="button">Frecuencia Consumo</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-riesgocv" type="button"><i class="fa-solid fa-heart-pulse text-danger me-1"></i> Riesgo CV (HEARTS)</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-seguimiento" type="button">Seguimiento</button></li>
                 </ul>
 
@@ -246,7 +271,7 @@ function renderCustomFields($seccion, $camposCustom) {
                             <h4 class="section-title">Datos Bioquímicos</h4>
                             <div class="row g-3">
                                 <div class="col-md-3"><label class="form-label">Triglicéridos</label><input type="text" class="form-control" name="bio_tg" value="<?= getVal($datosHistoria, 'bio_tg') ?>"></div>
-                                <div class="col-md-3"><label class="form-label">Colesterol Total</label><input type="text" class="form-control" name="bio_col_total" value="<?= getVal($datosHistoria, 'bio_col_total') ?>"></div>
+                                <div class="col-md-3"><label class="form-label">Colesterol Total</label><input type="text" class="form-control" name="bio_col_total" id="bio_col_total" value="<?= getVal($datosHistoria, 'bio_col_total') ?>"></div>
                                 <div class="col-md-3"><label class="form-label">HDL</label><input type="text" class="form-control" name="bio_hdl" value="<?= getVal($datosHistoria, 'bio_hdl') ?>"></div>
                                 <div class="col-md-3"><label class="form-label">LDL</label><input type="text" class="form-control" name="bio_ldl" value="<?= getVal($datosHistoria, 'bio_ldl') ?>"></div>
                                 
@@ -263,7 +288,7 @@ function renderCustomFields($seccion, $camposCustom) {
                         <div class="form-section mb-4">
                             <h4 class="section-title">Signos Vitales y Capacidad Funcional</h4>
                             <div class="row g-3">
-                                <div class="col-md-4"><label class="form-label">Presión Arterial (mmHg)</label><input type="text" class="form-control" name="presion_arterial" value="<?= getVal($datosHistoria, 'presion_arterial') ?>"></div>
+                                <div class="col-md-4"><label class="form-label">Presión Arterial (mmHg)</label><input type="text" class="form-control" name="presion_arterial" id="hce_presion_arterial" value="<?= getVal($datosHistoria, 'presion_arterial') ?>"></div>
                                 <div class="col-md-4"><label class="form-label">Frecuencia Cardíaca (lpm)</label><input type="text" class="form-control" name="frecuencia_cardiaca" value="<?= getVal($datosHistoria, 'frecuencia_cardiaca') ?>"></div>
                                 <div class="col-md-4"><label class="form-label">Capacidad Funcional / Dinamometría</label><input type="text" class="form-control" name="capacidad_funcional" placeholder="Independencia física, fuerza de agarre..." value="<?= getVal($datosHistoria, 'capacidad_funcional') ?>"></div>
                             </div>
@@ -429,7 +454,253 @@ function renderCustomFields($seccion, $camposCustom) {
                         </div>
                     </div>
 
-                    <!-- TAB 6: SEGUIMIENTO Y MONITOREO -->
+                    <!-- TAB 6: RIESGO CARDIOVASCULAR (HEARTS / OMS) -->
+                    <div class="tab-pane fade" id="tab-riesgocv">
+                        <div class="form-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <div>
+                                    <h4 class="text-danger fw-bold mb-1"><i class="fa-solid fa-heart-pulse me-2"></i> Evaluación de Riesgo Cardiovascular a 10 Años</h4>
+                                    <p class="text-muted small mb-0">Protocolo Oficial OPS / Iniciativa HEARTS en las Américas / OMS 2019 (Subregión Cono Sur / AMR B)</p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="btnGuardarRiesgoCV">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Evaluación CV
+                                </button>
+                            </div>
+
+                            <!-- Paso 1: Filtros de Exclusión / Alto Riesgo Preexistente -->
+                            <div class="card mb-4 border-warning bg-light">
+                                <div class="card-header bg-warning bg-opacity-25 fw-bold text-dark py-2">
+                                    <i class="fa-solid fa-shield-halved text-warning me-1"></i> 1. Condiciones de Alto Riesgo Preexistente (Filtros de Exclusión Directa)
+                                </div>
+                                <div class="card-body py-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="hce_cv_ecv">
+                                                <label class="form-check-label fw-bold text-dark" for="hce_cv_ecv">
+                                                    ¿Tiene historia de Enfermedad Cardiovascular Establecida?
+                                                </label>
+                                                <small class="text-muted d-block">Infarto de miocardio, angina, revascularización, ACV, TIA o arteriopatía periférica.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="hce_cv_erc">
+                                                <label class="form-check-label fw-bold text-dark" for="hce_cv_erc">
+                                                    ¿Tiene Enfermedad Renal Crónica (ERC)?
+                                                </label>
+                                                <small class="text-muted d-block">Tasa de filtrado glomerular &lt; 60 mL/min/1.73m² o albuminuria persistente.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paso 2: Parámetros Clínicos del Paciente -->
+                            <div class="card mb-4 border-0 shadow-sm" id="hce_cv_parametros_card">
+                                <div class="card-header bg-white fw-bold text-dark py-2 border-bottom">
+                                    <i class="fa-solid fa-sliders text-success me-1"></i> 2. Parámetros Clínicos y de Laboratorio (Auto-precargados)
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted fw-bold small">Sexo Biológico</label>
+                                            <select id="hce_cv_sexo" class="form-select form-select-sm">
+                                                <option value="M" <?= ($paciente['Sexo'] ?? 'M') === 'M' ? 'selected' : '' ?>>Masculino</option>
+                                                <option value="F" <?= ($paciente['Sexo'] ?? 'M') === 'F' ? 'selected' : '' ?>>Femenino</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted fw-bold small">Edad (años)</label>
+                                            <input type="number" id="hce_cv_edad" class="form-control form-control-sm" value="<?= $edadPacienteCalc ?>" min="18" max="100">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted fw-bold small">¿Tiene Diabetes Mellitus?</label>
+                                            <select id="hce_cv_diabetes" class="form-select form-select-sm">
+                                                <option value="0">No Diabético</option>
+                                                <option value="1">Diabético (Tipo 1 / Tipo 2)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted fw-bold small">Tabaquismo Actual</label>
+                                            <select id="hce_cv_tabaco" class="form-select form-select-sm">
+                                                <option value="0">No Fumador</option>
+                                                <option value="1">Fumador Activo / Cesó &lt; 1 año</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label text-muted fw-bold small">Presión Sistólica (PAS mmHg)</label>
+                                            <input type="number" id="hce_cv_pas" class="form-control form-control-sm" value="<?= $pasAuto ?>" min="70" max="250">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label text-muted fw-bold small">Vía de Evaluación</label>
+                                            <select id="hce_cv_via" class="form-select form-select-sm">
+                                                <option value="imc" <?= empty($colAuto) ? 'selected' : '' ?>>Vía B: Sin Colesterol (Basada en IMC)</option>
+                                                <option value="colesterol" <?= !empty($colAuto) ? 'selected' : '' ?>>Vía A: Con Colesterol Total</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4" id="hce_cv_grupo_col" style="<?= empty($colAuto) ? 'display: none;' : '' ?>">
+                                            <label class="form-label text-muted fw-bold small">Colesterol Total (mg/dL)</label>
+                                            <input type="number" id="hce_cv_col" class="form-control form-control-sm" value="<?= !empty($colAuto) ? (float)$colAuto : 200 ?>" placeholder="Ej: 210">
+                                        </div>
+                                        <div class="col-md-4" id="hce_cv_grupo_imc" style="<?= !empty($colAuto) ? 'display: none;' : '' ?>">
+                                            <label class="form-label text-muted fw-bold small">IMC (kg/m²)</label>
+                                            <input type="number" step="0.1" id="hce_cv_imc" class="form-control form-control-sm" value="<?= !empty($imcAuto) ? (float)$imcAuto : 25.0 ?>" placeholder="Ej: 26.5">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paso 3: Resultados de la Evaluación y Semáforo -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100 border shadow-sm text-center">
+                                        <div class="card-header bg-white fw-bold text-dark py-2">
+                                            <i class="fa-solid fa-chart-pie text-primary me-1"></i> Estratificación de Riesgo Cardiovascular
+                                        </div>
+                                        <div class="card-body p-4 d-flex flex-column justify-content-center">
+                                            <small class="text-uppercase text-muted fw-bold mb-1">Riesgo a 10 Años (Infarto / ACV)</small>
+                                            <h1 class="display-5 fw-bold mb-1" id="hce_res_cv_pct" style="color: #10b981;">--</h1>
+                                            <div>
+                                                <span class="badge fs-6 py-2 px-4 shadow-sm" id="hce_res_cv_badge" style="background-color: #10b981;">Bajo (&lt; 5%)</span>
+                                            </div>
+                                            <p class="small text-muted mt-3 mb-0" id="hce_res_cv_motivo">Estratificación oficial OMS 2019 AMR B (Cono Sur).</p>
+                                            
+                                            <div class="progress mt-3" style="height: 10px;">
+                                                <div id="hce_res_cv_bar" class="progress-bar" role="progressbar" style="width: 15%; background-color: #10b981;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card h-100 border shadow-sm">
+                                        <div class="card-header bg-white fw-bold text-dark py-2">
+                                            <i class="fa-solid fa-bullseye text-danger me-1"></i> Metas Terapéuticas HEARTS / OPS
+                                        </div>
+                                        <div class="card-body p-3">
+                                            <ul class="list-group list-group-flush small">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <span><strong>Meta Presión Arterial:</strong></span>
+                                                    <span class="badge bg-light text-dark border fw-bold" id="hce_res_cv_metapas">&lt; 140/90 mmHg</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <span><strong>Meta Colesterol LDL:</strong></span>
+                                                    <span class="badge bg-light text-dark border fw-bold" id="hce_res_cv_metaldl">&lt; 116 mg/dL</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <span><strong>Seguimiento Clínico:</strong></span>
+                                                    <span class="badge bg-light text-dark border fw-bold" id="hce_res_cv_seg">Cada 3-5 años</span>
+                                                </li>
+                                            </ul>
+                                            <div class="alert alert-light border mt-3 mb-0 p-2 small">
+                                                <strong>Pautas Nutricionales:</strong>
+                                                <div id="hce_res_cv_recom_box" class="mt-1" style="font-size:0.8rem; line-height: 1.4;">
+                                                    Cargando recomendaciones...
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paso 4: Simulador Interactivo "¿Qué pasaría si...?" -->
+                            <div class="card mb-4 border border-info shadow-sm bg-light">
+                                <div class="card-header bg-info bg-opacity-10 fw-bold text-primary py-2 d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-wand-magic-sparkles me-2"></i> Simulador Interactivo "¿Qué pasaría si...?" (Educación Motivacional)</span>
+                                    <span class="badge bg-primary" id="hce_sim_delta_badge">Δ 0.0 pts de reducción</span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted">Meta Tabaquismo</label>
+                                            <select id="hce_sim_tabaco" class="form-select form-select-sm">
+                                                <option value="0">Cesación Tabáquica (No Fuma)</option>
+                                                <option value="1">Continúa Fumando</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted">Meta PAS Objetivo (mmHg)</label>
+                                            <input type="number" id="hce_sim_pas" class="form-control form-control-sm" value="120" min="90" max="200">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted">Meta IMC Objetivo (kg/m²)</label>
+                                            <input type="number" step="0.1" id="hce_sim_imc" class="form-control form-control-sm" value="23.5" min="18" max="50">
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-white bg-white border mt-3 mb-0 p-3 small rounded" id="hce_sim_mensaje">
+                                        Modifica los parámetros para visualizar el beneficio terapéutico proyectado.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Historial de Evaluaciones de Riesgo CV Anteriores -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white fw-bold text-dark py-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-clock-rotate-left text-secondary me-1"></i> Historial de Evaluaciones Cardiovasculares del Paciente</span>
+                                    <span class="badge bg-secondary"><?= count($evaluacionesCV ?? []) ?> registros</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0 small">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Edad</th>
+                                                    <th>Sexo</th>
+                                                    <th>Tabaquismo</th>
+                                                    <th>Diabetes</th>
+                                                    <th>PAS</th>
+                                                    <th>Vía</th>
+                                                    <th>Col / IMC</th>
+                                                    <th>Riesgo a 10 Años</th>
+                                                    <th>Categoría</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tablaHistorialRiesgoCV">
+                                                <?php if (!empty($evaluacionesCV)): ?>
+                                                    <?php foreach ($evaluacionesCV as $eval): 
+                                                        $badgeColor = '#10b981';
+                                                        if ($eval['categoria_riesgo'] === 'Moderado') $badgeColor = '#eab308';
+                                                        elseif ($eval['categoria_riesgo'] === 'Alto') $badgeColor = '#f97316';
+                                                        elseif ($eval['categoria_riesgo'] === 'Muy Alto') $badgeColor = '#ef4444';
+                                                        elseif ($eval['categoria_riesgo'] === 'Critico') $badgeColor = '#881337';
+                                                    ?>
+                                                    <tr>
+                                                        <td><?= date('d/m/Y H:i', strtotime($eval['fecha_evaluacion'])) ?></td>
+                                                        <td><?= $eval['edad'] ?> años</td>
+                                                        <td><?= $eval['sexo'] === 'F' ? 'Femenino' : 'Masculino' ?></td>
+                                                        <td><?= !empty($eval['tabaquismo']) ? '<span class="badge bg-danger">Fumador</span>' : '<span class="badge bg-light text-secondary border">No</span>' ?></td>
+                                                        <td><?= !empty($eval['diabetes']) ? '<span class="badge bg-warning text-dark">Diabético</span>' : '<span class="badge bg-light text-secondary border">No</span>' ?></td>
+                                                        <td><?= $eval['presion_sistolica'] ?> mmHg</td>
+                                                        <td><?= !empty($eval['con_colesterol']) ? 'Con Colesterol' : 'Sin Col (IMC)' ?></td>
+                                                        <td><?= !empty($eval['con_colesterol']) ? ($eval['colesterol_total'] . ' mg/dL') : ($eval['imc'] . ' kg/m²') ?></td>
+                                                        <td class="fw-bold"><?= htmlspecialchars($eval['porcentaje_riesgo']) ?></td>
+                                                        <td>
+                                                            <span class="badge text-white" style="background-color: <?= $badgeColor ?>;">
+                                                                <?= htmlspecialchars($eval['categoria_riesgo']) ?>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <tr id="filaSinHistorialCV">
+                                                        <td colspan="10" class="text-center py-4 text-muted">
+                                                            <i class="fa-solid fa-heart-pulse fa-2x mb-2 d-block text-secondary opacity-50"></i>
+                                                            No hay evaluaciones cardiovasculares previas guardadas para este paciente.
+                                                        </td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TAB 7: SEGUIMIENTO Y MONITOREO -->
                     <div class="tab-pane fade" id="tab-seguimiento">
                         <div class="form-section">
                             <h4 class="section-title">Monitoreo y Seguimiento</h4>
@@ -489,6 +760,7 @@ function renderCustomFields($seccion, $camposCustom) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="public/js/antropometria_reactiva.js"></script>
     <script src="public/js/nfpe_alertas.js"></script>
+    <script src="public/js/hearts_risk_calculator.js?v=<?= time() ?>"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Manejar agregar campos dinámicos
@@ -499,7 +771,6 @@ function renderCustomFields($seccion, $camposCustom) {
                     const containerId = 'custom-fields-' + seccion;
                     const container = document.getElementById(containerId);
                     
-                    // Generar un índice único basado en el tiempo
                     const index = new Date().getTime();
                     
                     const row = document.createElement('div');
@@ -516,6 +787,214 @@ function renderCustomFields($seccion, $camposCustom) {
                     container.appendChild(row);
                 });
             });
+
+            // ==============================================================
+            // LÓGICA REACTIVA DE LA CALCULADORA DE RIESGO CARDIOVASCULAR
+            // ==============================================================
+            const idPaciente = <?= (int)$paciente['IdPaciente'] ?>;
+            const cvEcv = document.getElementById('hce_cv_ecv');
+            const cvErc = document.getElementById('hce_cv_erc');
+            const cvSexo = document.getElementById('hce_cv_sexo');
+            const cvEdad = document.getElementById('hce_cv_edad');
+            const cvDiabetes = document.getElementById('hce_cv_diabetes');
+            const cvTabaco = document.getElementById('hce_cv_tabaco');
+            const cvPas = document.getElementById('hce_cv_pas');
+            const cvVia = document.getElementById('hce_cv_via');
+            const cvCol = document.getElementById('hce_cv_col');
+            const cvImc = document.getElementById('hce_cv_imc');
+            const grupoCol = document.getElementById('hce_cv_grupo_col');
+            const grupoImc = document.getElementById('hce_cv_grupo_imc');
+            const cardParams = document.getElementById('hce_cv_parametros_card');
+
+            const resPct = document.getElementById('hce_res_cv_pct');
+            const resBadge = document.getElementById('hce_res_cv_badge');
+            const resMotivo = document.getElementById('hce_res_cv_motivo');
+            const resBar = document.getElementById('hce_res_cv_bar');
+            const resMetaPas = document.getElementById('hce_res_cv_metapas');
+            const resMetaLdl = document.getElementById('hce_res_cv_metaldl');
+            const resSeg = document.getElementById('hce_res_cv_seg');
+            const recomBox = document.getElementById('hce_res_cv_recom_box');
+
+            const simTabaco = document.getElementById('hce_sim_tabaco');
+            const simPas = document.getElementById('hce_sim_pas');
+            const simImc = document.getElementById('hce_sim_imc');
+            const simDeltaBadge = document.getElementById('hce_sim_delta_badge');
+            const simMensaje = document.getElementById('hce_sim_mensaje');
+            const btnGuardarCV = document.getElementById('btnGuardarRiesgoCV');
+
+            function getParamsActuales() {
+                const ecv = cvEcv ? cvEcv.checked : false;
+                const erc = cvErc ? cvErc.checked : false;
+                const via = cvVia ? cvVia.value : 'imc';
+
+                return {
+                    id_paciente: idPaciente,
+                    antecedente_ecv: ecv,
+                    antecedente_erc: erc,
+                    sexo: cvSexo ? cvSexo.value : 'M',
+                    edad: cvEdad ? parseInt(cvEdad.value, 10) : 50,
+                    diabetes: cvDiabetes ? parseInt(cvDiabetes.value, 10) : 0,
+                    tabaquismo: cvTabaco ? parseInt(cvTabaco.value, 10) : 0,
+                    presion_sistolica: cvPas ? parseInt(cvPas.value, 10) : 120,
+                    con_colesterol: via === 'colesterol',
+                    colesterol_total: cvCol ? parseFloat(cvCol.value) : null,
+                    imc: cvImc ? parseFloat(cvImc.value) : 25.0
+                };
+            }
+
+            function recalcularRiesgoHCE() {
+                if (!resPct || typeof HeartsRiskCalculator === 'undefined') return;
+
+                const params = getParamsActuales();
+
+                if (params.antecedente_ecv || params.antecedente_erc) {
+                    if (cardParams) cardParams.style.opacity = '0.5';
+                } else {
+                    if (cardParams) cardParams.style.opacity = '1';
+                }
+
+                if (params.con_colesterol) {
+                    if (grupoCol) grupoCol.style.display = 'block';
+                    if (grupoImc) grupoImc.style.display = 'none';
+                } else {
+                    if (grupoCol) grupoCol.style.display = 'none';
+                    if (grupoImc) grupoImc.style.display = 'block';
+                }
+
+                const res = HeartsRiskCalculator.evaluar(params);
+
+                resPct.textContent = res.porcentaje_riesgo;
+                resPct.style.color = res.color;
+                resBadge.textContent = `${res.categoria_riesgo} (${res.porcentaje_riesgo})`;
+                resBadge.style.backgroundColor = res.color;
+                resMotivo.textContent = res.motivo;
+
+                let barPct = 15;
+                if (res.categoria_riesgo === 'Moderado') barPct = 35;
+                else if (res.categoria_riesgo === 'Alto') barPct = 60;
+                else if (res.categoria_riesgo === 'Muy Alto') barPct = 85;
+                else if (res.categoria_riesgo === 'Critico') barPct = 100;
+
+                resBar.style.width = barPct + '%';
+                resBar.style.backgroundColor = res.color;
+
+                resMetaPas.textContent = res.meta_pas;
+                resMetaLdl.textContent = res.meta_ldl;
+                resSeg.textContent = res.seguimiento;
+
+                if (recomBox) {
+                    recomBox.innerHTML = res.recomendaciones.map(r => `<div class="mb-1">${r.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`).join('');
+                }
+
+                simularWhatIfHCE(params);
+            }
+
+            function simularWhatIfHCE(paramsBase) {
+                if (!simDeltaBadge || !simMensaje || typeof HeartsRiskCalculator === 'undefined') return;
+
+                const cambios = {
+                    tabaquismo: simTabaco ? parseInt(simTabaco.value, 10) : 0,
+                    presion_sistolica: simPas ? parseInt(simPas.value, 10) : 120,
+                    imc: simImc ? parseFloat(simImc.value) : 23.5
+                };
+
+                const simRes = HeartsRiskCalculator.simularEscenario(paramsBase, cambios);
+                simDeltaBadge.textContent = `Δ -${simRes.reduccion_puntos} pts`;
+                simMensaje.innerHTML = simRes.mensaje.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            // Escuchar cambios
+            [cvEcv, cvErc, cvSexo, cvEdad, cvDiabetes, cvTabaco, cvPas, cvVia, cvCol, cvImc].forEach(el => {
+                if (el) {
+                    el.addEventListener('input', recalcularRiesgoHCE);
+                    el.addEventListener('change', recalcularRiesgoHCE);
+                }
+            });
+
+            if (simTabaco && simPas && simImc) {
+                [simTabaco, simPas, simImc].forEach(el => {
+                    el.addEventListener('input', () => simularWhatIfHCE(getParamsActuales()));
+                    el.addEventListener('change', () => simularWhatIfHCE(getParamsActuales()));
+                });
+            }
+
+            // Guardar evaluación vía AJAX
+            if (btnGuardarCV) {
+                btnGuardarCV.addEventListener('click', function () {
+                    const params = getParamsActuales();
+
+                    btnGuardarCV.disabled = true;
+                    btnGuardarCV.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...';
+
+                    fetch('index.php?action=api_guardar_evaluacion_cv', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        btnGuardarCV.disabled = false;
+                        btnGuardarCV.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Evaluación CV';
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Evaluación Guardada',
+                                text: `Se registró la estratificación ${data.calculo.categoria_riesgo} (${data.calculo.porcentaje_riesgo}) en la historia clínica.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            // Agregar fila a la tabla histórica dinámicamente
+                            const tbody = document.getElementById('tablaHistorialRiesgoCV');
+                            const filaVacia = document.getElementById('filaSinHistorialCV');
+                            if (filaVacia) filaVacia.remove();
+
+                            if (tbody) {
+                                const tr = document.createElement('tr');
+                                const now = new Date();
+                                const fechaStr = now.toLocaleDateString('es-AR') + ' ' + now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                                
+                                tr.innerHTML = `
+                                    <td>${fechaStr}</td>
+                                    <td>${params.edad} años</td>
+                                    <td>${params.sexo === 'F' ? 'Femenino' : 'Masculino'}</td>
+                                    <td>${params.tabaquismo ? '<span class="badge bg-danger">Fumador</span>' : '<span class="badge bg-light text-secondary border">No</span>'}</td>
+                                    <td>${params.diabetes ? '<span class="badge bg-warning text-dark">Diabético</span>' : '<span class="badge bg-light text-secondary border">No</span>'}</td>
+                                    <td>${params.presion_sistolica} mmHg</td>
+                                    <td>${params.con_colesterol ? 'Con Colesterol' : 'Sin Col (IMC)'}</td>
+                                    <td>${params.con_colesterol ? (params.colesterol_total + ' mg/dL') : (params.imc + ' kg/m²')}</td>
+                                    <td class="fw-bold">${data.calculo.porcentaje_riesgo}</td>
+                                    <td>
+                                        <span class="badge text-white" style="background-color: ${data.calculo.color};">
+                                            ${data.calculo.categoria_riesgo}
+                                        </span>
+                                    </td>
+                                `;
+                                tbody.insertBefore(tr, tbody.firstChild);
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'No se pudo guardar la evaluación'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        btnGuardarCV.disabled = false;
+                        btnGuardarCV.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Evaluación CV';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Red',
+                            text: 'Ocurrió un fallo en la conexión con el servidor.'
+                        });
+                    });
+                });
+            }
+
+            // Inicializar cálculo inicial
+            recalcularRiesgoHCE();
         });
     </script>
 </body>
